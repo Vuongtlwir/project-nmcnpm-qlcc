@@ -7,7 +7,7 @@ const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return response.error(res, 'Authentication token missing or invalid format', 'UNAUTHORIZED', null, 417); // 417 or 401
+      return response.error(res, 'Authentication token missing or invalid format', 'UNAUTHORIZED', null, 401);
     }
 
     const token = authHeader.split(' ')[1];

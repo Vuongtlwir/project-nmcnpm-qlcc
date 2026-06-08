@@ -8,6 +8,7 @@ const apiRoutes = require('./src/routes');
 const errorHandler = require('./src/middlewares/errorMiddleware');
 const loggerMiddleware = require('./src/middlewares/loggerMiddleware');
 const response = require('./src/utils/response');
+const db = require('./src/config/database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -36,9 +37,22 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 // Start the server
-app.listen(PORT, () => {
-  console.log(`========================================`);
-  console.log(`Server is running in ${process.env.NODE_ENV || 'development'} mode`);
-  console.log(`Address: http://localhost:${PORT}`);
-  console.log(`========================================`);
-});
+const startServer = async () => {
+  try {
+    // Verify DB connection before starting
+    const conn = await db.getConnection();
+    conn.release();
+  } catch (err) {
+    console.error('Unable to connect to database. Server will not start.', err.message || err);
+    process.exit(1);
+  }
+
+  app.listen(PORT, () => {
+    console.log(`========================================`);
+    console.log(`Server is running in ${process.env.NODE_ENV || 'development'} mode`);
+    console.log(`Address: http://localhost:${PORT}`);
+    console.log(`========================================`);
+  });
+};
+
+startServer();
