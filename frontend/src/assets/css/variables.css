@@ -1,0 +1,42 @@
+:root {
+  /* Typography */
+  --font-sans: Inter, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --font-heading: var(--font-sans);
+
+  /* Core palette (Light theme) */
+  --bg: #f7fbff;
+  --surface: #ffffff;
+  --muted: #6b7280;
+  --text: #0f172a;
+  --border: #e6eef8;
+
+  /* Primary (blue) scale */
+  --primary-50: #eff6ff;
+  --primary-100: #dbeafe;
+  --primary-200: #bfdbfe;
+  --primary-300: #93c5fd;
+  --primary-400: #60a5fa;
+  --primary: #2563eb;
+  --primary-600: #1d4ed8;
+  --primary-700: #1e40af;
+  --primary-800: #172554;
+
+  /* Semantic */
+  --success: #16a34a;
+  --danger: #dc2626;
+  --accent: var(--primary);
+
+  /* Layout & spacing */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 24px;
+  --shadow-sm: 0 6px 18px rgba(2, 6, 23, 0.06);
+  --shadow-md: 0 12px 30px rgba(15, 23, 42, 0.08);
+
+  --space-xs: 6px;
+  --space-sm: 12px;
+  --space-md: 20px;
+  --space-lg: 28px;
+
+  --max-width: 1200px;
+}

@@ -19,25 +19,25 @@ ALTER TABLE complaints AUTO_INCREMENT = 1;
 ALTER TABLE notifications AUTO_INCREMENT = 1;
 
 -- Seed Users
--- Password for all users: '123456' (bcrypt hash: $2a$10$X8aW/7c5d7QoP4B2cM4rFeR1fF74qB001p06V8vL7C7iH.u1xQ15S)
+-- Password for all users: '123456' (bcrypt hash: $2a$10$AbYD1tDuaiAFhYOEjoePWuJJQ2rfXF2ZLr6q1i39/bwaQDWvmw9Bm)
 INSERT INTO users (id, username, email, password, role, full_name, phone, is_active) VALUES
-(1, 'admin', 'admin@qlcc.com', '$2a$10$X8aW/7c5d7QoP4B2cM4rFeR1fF74qB001p06V8vL7C7iH.u1xQ15S', 'admin', 'Nguyễn Quang Huy', '0912345678', 1),
-(2, 'user1', 'user1@qlcc.com', '$2a$10$X8aW/7c5d7QoP4B2cM4rFeR1fF74qB001p06V8vL7C7iH.u1xQ15S', 'user', 'Trần Lê Vương', '0987654321', 1),
-(3, 'user2', 'user2@qlcc.com', '$2a$10$X8aW/7c5d7QoP4B2cM4rFeR1fF74qB001p06V8vL7C7iH.u1xQ15S', 'user', 'Phạm Việt Cường', '0901234567', 1);
+(1, 'admin', 'admin@qlcc.com', '$2a$10$AbYD1tDuaiAFhYOEjoePWuJJQ2rfXF2ZLr6q1i39/bwaQDWvmw9Bm', 'admin', 'Nguyễn Quang Huy', '0912345678', 1),
+(2, 'user1', 'user1@qlcc.com', '$2a$10$AbYD1tDuaiAFhYOEjoePWuJJQ2rfXF2ZLr6q1i39/bwaQDWvmw9Bm', 'user', 'Trần Lê Vương', '0987654321', 1),
+(3, 'user2', 'user2@qlcc.com', '$2a$10$AbYD1tDuaiAFhYOEjoePWuJJQ2rfXF2ZLr6q1i39/bwaQDWvmw9Bm', 'user', 'Phạm Việt Cường', '0901234567', 1);
 
 -- Seed Apartments
-INSERT INTO apartments (id, code, floor, building, area, num_rooms, status, owner_name, owner_phone) VALUES
-(1, 'A-101', 1, 'Tòa A', 75.5, 2, 'occupied', 'Trần Lê Vương', '0987654321'),
-(2, 'A-102', 1, 'Tòa A', 75.5, 2, 'occupied', 'Phạm Việt Cường', '0901234567'),
-(3, 'B-201', 2, 'Tòa B', 110.0, 3, 'occupied', 'Lê Hoàng Long', '0933445566'),
-(4, 'B-202', 2, 'Tòa B', 50.0, 1, 'empty', NULL, NULL),
-(5, 'C-301', 3, 'Tòa C', 90.0, 2, 'maintenance', NULL, NULL),
-(6, 'C-302', 3, 'Tòa C', 90.0, 2, 'occupied', 'Nguyễn Thị Hoa', '0944556677');
+INSERT INTO apartments (id, code, floor, building, area, num_rooms, motorbikes, bicycles, cars, status, owner_name, owner_phone) VALUES
+(1, 'A-101', 1, 'Tòa A', 75.5, 2, 1, 1, 0, 'occupied', 'Trần Lê Vương', '0987654321'),
+(2, 'A-102', 1, 'Tòa A', 75.5, 2, 2, 1, 1, 'occupied', 'Phạm Việt Cường', '0901234567'),
+(3, 'B-201', 2, 'Tòa B', 110.0, 3, 1, 0, 1, 'occupied', 'Lê Hoàng Long', '0933445566'),
+(4, 'B-202', 2, 'Tòa B', 50.0, 1, 0, 0, 0, 'empty', NULL, NULL),
+(5, 'C-301', 3, 'Tòa C', 90.0, 2, 1, 1, 0, 'maintenance', NULL, NULL),
+(6, 'C-302', 3, 'Tòa C', 90.0, 2, 2, 0, 1, 'occupied', 'Nguyễn Thị Hoa', '0944556677');
 
 -- Seed Residents
 INSERT INTO residents (id, resident_code, apartment_id, user_id, full_name, date_of_birth, gender, id_card, phone, email, relation, status, move_in_date, move_out_date) VALUES
 (1, 'CD-000001', 1, 2, 'Trần Lê Vương', '1995-05-15', 'male', '123456789', '0987654321', 'user1@qlcc.com', 'owner', 'active', '2025-01-10', NULL),
-(2, 'CD-000002', 1, NULL, 'Trần Lê Nam', '2000-08-20', 'male', '123456780', '0987654322', NULL, 'member', 'active', '2025-01-10', NULL),
+(2, 'CD-000002', 1, 2, 'Trần Lê Nam', '2000-08-20', 'male', '123456780', '0987654322', NULL, 'member', 'active', '2025-01-10', NULL),
 (3, 'CD-000003', 2, 3, 'Phạm Việt Cường', '1992-12-01', 'male', '234567890', '0901234567', 'user2@qlcc.com', 'owner', 'active', '2025-02-15', NULL),
 (4, 'CD-000004', 2, NULL, 'Phạm Ngọc Mai', '1995-03-10', 'female', '234567891', NULL, NULL, 'member', 'active', '2025-02-15', NULL),
 (5, 'CD-000005', 3, NULL, 'Lê Hoàng Long', '1988-06-25', 'male', '345678901', '0933445566', 'long.le@gmail.com', 'owner', 'active', '2024-05-20', NULL),
@@ -74,9 +74,9 @@ INSERT INTO complaints (id, user_id, title, content, status, response) VALUES
 (4, 3, 'Hỏng bóng đèn hành lang', 'Hành lang tầng 1 tòa A bóng đèn số 3 bị cháy, đề nghị thay thế.', 'rejected', 'Bóng đèn hành lang đã được đội kỹ thuật kiểm tra và thấy vẫn hoạt động bình thường, nguyên nhân do aptomat bị tắt.');
 
 -- Seed Notifications
-INSERT INTO notifications (id, user_id, title, content, type, is_read) VALUES
-(1, NULL, 'Thông báo bảo trì hệ thống điện toàn tòa nhà', 'Ban quản lý sẽ tiến hành bảo trì hệ thống điện dự phòng vào Chủ Nhật tuần này từ 8h00 đến 11h00. Mong cư dân thông cảm.', 'maintenance', 0),
-(2, NULL, 'Thông báo nộp phí tháng 05/2026', 'Yêu cầu các hộ dân hoàn thành nghĩa vụ đóng các khoản phí quản lý, phí gửi xe tháng 5 trước ngày 31/05/2026.', 'fee', 0),
-(3, 2, 'Xác nhận đã thanh toán phí gửi xe', 'Giao dịch thanh toán phí gửi xe máy tháng 05/2026 của căn hộ A-101 đã thành công.', 'fee', 1),
-(4, NULL, 'Ngày hội thể thao cư dân 2026', 'Ban quản lý tổ chức ngày hội thể thao cho cư dân vào ngày 15/06 tại khu vực sân chơi chung cư.', 'event', 0),
-(5, 3, 'Phản hồi khiếu nại của bạn', 'Yêu cầu xử lý bóng đèn hành lang đã bị từ chối do bóng đèn vẫn hoạt động tốt.', 'general', 0);
+INSERT INTO notifications (id, user_id, sort_order, title, content, type, is_read) VALUES
+(1, NULL, 1, 'Thông báo bảo trì hệ thống điện toàn tòa nhà', 'Ban quản lý sẽ tiến hành bảo trì hệ thống điện dự phòng vào Chủ Nhật tuần này từ 8h00 đến 11h00. Mong cư dân thông cảm.', 'Bảng tin chung cư', 0),
+(2, NULL, 2, 'Thông báo nộp phí tháng 05/2026', 'Yêu cầu các hộ dân hoàn thành nghĩa vụ đóng các khoản phí quản lý, phí gửi xe tháng 5 trước ngày 31/05/2026.', 'Bảng tin chung cư', 0),
+(3, 2, 3, 'Xác nhận đã thanh toán phí gửi xe', 'Giao dịch thanh toán phí gửi xe máy tháng 05/2026 của căn hộ A-101 đã thành công.', 'Bảng tin chung cư', 1),
+(4, NULL, 4, 'Ngày hội thể thao cư dân 2026', 'Ban quản lý tổ chức ngày hội thể thao cho cư dân vào ngày 15/06 tại khu vực sân chơi chung cư.', 'Bảng tin chung cư', 0),
+(5, 3, 5, 'Phản hồi khiếu nại của bạn', 'Yêu cầu xử lý bóng đèn hành lang đã bị từ chối do bóng đèn vẫn hoạt động tốt.', 'Bảng tin chung cư', 0);

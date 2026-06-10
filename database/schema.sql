@@ -24,6 +24,9 @@ CREATE TABLE IF NOT EXISTS apartments (
     building VARCHAR(50) NOT NULL,
     area FLOAT NOT NULL, -- in square meters
     num_rooms INT NOT NULL,
+    motorbikes INT NOT NULL DEFAULT 0,
+    bicycles INT NOT NULL DEFAULT 0,
+    cars INT NOT NULL DEFAULT 0,
     status ENUM('empty', 'occupied', 'maintenance') NOT NULL DEFAULT 'empty',
     owner_name VARCHAR(100) NULL,
     owner_phone VARCHAR(20) NULL,
@@ -90,6 +93,7 @@ CREATE TABLE IF NOT EXISTS complaints (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     title VARCHAR(200) NOT NULL,
+    type VARCHAR(100) NOT NULL DEFAULT 'Khác',
     content TEXT NOT NULL,
     status ENUM('pending', 'processing', 'resolved', 'rejected') NOT NULL DEFAULT 'pending',
     response TEXT NULL,
@@ -102,19 +106,36 @@ CREATE TABLE IF NOT EXISTS complaints (
 CREATE TABLE IF NOT EXISTS notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NULL, -- NULL means send to all users
+    sort_order INT NOT NULL DEFAULT 0,
     title VARCHAR(200) NOT NULL,
     content TEXT NOT NULL,
-    type ENUM('general', 'fee', 'maintenance', 'event') NOT NULL DEFAULT 'general',
+     type VARCHAR(100) NOT NULL DEFAULT 'Bảng tin chung cư',
     is_read BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Table: messages (chat)
+CREATE TABLE IF NOT EXISTS messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    sender ENUM('user', 'admin') NOT NULL DEFAULT 'user',
+    text TEXT NOT NULL,
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_messages_user (user_id),
+    INDEX idx_messages_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Indexes for search optimization
 CREATE INDEX idx_users_username ON users(username);
 CREATE INDEX idx_apartments_code ON apartments(code);
+CREATE INDEX idx_residents_apartment_id ON residents(apartment_id);
+CREATE INDEX idx_residents_user_id ON residents(user_id);
 CREATE INDEX idx_residents_id_card ON residents(id_card);
 CREATE INDEX idx_residents_full_name ON residents(full_name);
+CREATE INDEX idx_residents_created_at ON residents(created_at);
 CREATE INDEX idx_fees_due_date ON fees(due_date);
 CREATE INDEX idx_payments_status ON payments(status);
 CREATE INDEX idx_complaints_status ON complaints(status);
