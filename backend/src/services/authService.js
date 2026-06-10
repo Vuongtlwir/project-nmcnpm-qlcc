@@ -90,8 +90,23 @@ const changePassword = async (userId, oldPassword, newPassword) => {
   return userRepository.update(userId, { password: hashedPassword });
 };
 
+const forgotPassword = async (email) => {
+  const user = await userRepository.findByEmail(email);
+  // Don't reveal if email exists for security
+  if (!user) {
+    return { message: 'Nếu email tồn tại trong hệ thống, hướng dẫn đặt lại mật khẩu sẽ được gửi.' };
+  }
+
+  // In production, send email with reset link
+  // For now, log the reset request
+  console.log(`[Password Reset] Request for email: ${email}, user: ${user.username}`);
+
+  return { message: 'Nếu email tồn tại trong hệ thống, hướng dẫn đặt lại mật khẩu sẽ được gửi.' };
+};
+
 module.exports = {
   login,
   register,
-  changePassword
+  changePassword,
+  forgotPassword
 };

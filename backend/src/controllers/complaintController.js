@@ -33,10 +33,11 @@ const getComplaintById = async (req, res, next) => {
 
 const createComplaint = async (req, res, next) => {
   try {
-    const { title, content } = req.body;
+    const { title, type, content } = req.body;
     const newComplaint = await complaintService.createComplaint({
       user_id: req.user.id,
       title,
+      type,
       content,
       status: 'pending'
     });
@@ -53,6 +54,7 @@ const updateComplaint = async (req, res, next) => {
     if (req.user.role === 'admin') {
       if (req.body.status) updateData.status = req.body.status;
       if (req.body.response) updateData.response = req.body.response;
+      if (req.body.type) updateData.type = req.body.type;
     } else {
       // User can only update title and content if status is still pending
       const complaint = await complaintService.getComplaintById(req.params.id);

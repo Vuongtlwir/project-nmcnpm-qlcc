@@ -17,12 +17,13 @@ const getAllNotifications = async (req, res, next) => {
 
 const createNotification = async (req, res, next) => {
   try {
-    const { title, content, type, user_id } = req.body;
+    const { title, content, type, user_id, sort_order = 0 } = req.body;
     const newNotification = await notificationService.createNotification({
       title,
       content,
       type,
       user_id,
+      sort_order,
       is_read: false
     });
     return response.success(res, 'Tạo thông báo thành công', newNotification, null, 201);
@@ -38,6 +39,27 @@ const markAsRead = async (req, res, next) => {
       return response.error(res, 'Đánh dấu đã đọc thất bại', 'BAD_REQUEST', null, 400);
     }
     return response.success(res, 'Đánh dấu đã đọc thành công');
+  } catch (err) {
+    next(err);
+  }
+};
+
+const updateNotification = async (req, res, next) => {
+  try {
+    const { title, content, type, user_id, sort_order } = req.body;
+    const success = await notificationService.updateNotification(req.params.id, {
+      title,
+      content,
+      type,
+      user_id,
+      sort_order
+    });
+
+    if (!success) {
+      return response.error(res, 'Cập nhật thông báo thất bại', 'BAD_REQUEST', null, 400);
+    }
+
+    return response.success(res, 'Cập nhật thông báo thành công');
   } catch (err) {
     next(err);
   }
@@ -59,5 +81,6 @@ module.exports = {
   getAllNotifications,
   createNotification,
   markAsRead,
+  updateNotification,
   deleteNotification
 };

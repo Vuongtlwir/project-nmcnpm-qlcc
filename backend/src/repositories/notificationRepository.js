@@ -10,7 +10,7 @@ const findAll = async ({ userId = null } = {}) => {
     params.push(userId);
   }
 
-  query += ' ORDER BY created_at DESC';
+  query += ' ORDER BY sort_order ASC, created_at DESC';
 
   const [rows] = await db.query(query, params);
   return rows;
@@ -22,10 +22,10 @@ const findById = async (id) => {
 };
 
 const create = async (notification) => {
-  const { user_id, title, content, type, is_read } = notification;
+  const { user_id, sort_order = 0, title, content, type, is_read } = notification;
   const [result] = await db.execute(
-    'INSERT INTO notifications (user_id, title, content, type, is_read) VALUES (?, ?, ?, ?, ?)',
-    [user_id || null, title, content, type || 'general', is_read ? 1 : 0]
+    'INSERT INTO notifications (user_id, sort_order, title, content, type, is_read) VALUES (?, ?, ?, ?, ?, ?)',
+    [user_id || null, sort_order, title, content, type || 'general', is_read ? 1 : 0]
   );
   return result.insertId;
 };

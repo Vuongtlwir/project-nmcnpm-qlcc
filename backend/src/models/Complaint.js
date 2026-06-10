@@ -5,6 +5,7 @@ const ComplaintFields = {
   id: 'id',
   user_id: 'user_id',
   title: 'title',
+  type: 'type',
   content: 'content',
   status: 'status',
   response: 'response',

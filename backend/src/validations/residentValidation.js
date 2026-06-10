@@ -19,7 +19,7 @@ const residentCreateSchema = Joi.object({
   }),
   phone: Joi.string().pattern(/^[0-9]{10,11}$/).allow(null, ''),
   email: Joi.string().email().allow(null, ''),
-  relation: Joi.string().valid('owner', 'member', 'tenant').default('member'),
+  relation: Joi.string().valid('owner', 'tenant').default('tenant'),
   status: Joi.string().valid('active', 'moved_out').default('active'),
   move_in_date: Joi.date().required().messages({
     'any.required': 'Ngày chuyển vào là bắt buộc'
@@ -36,7 +36,7 @@ const residentUpdateSchema = Joi.object({
   id_card: Joi.string(),
   phone: Joi.string().pattern(/^[0-9]{10,11}$/).allow(null, ''),
   email: Joi.string().email().allow(null, ''),
-  relation: Joi.string().valid('owner', 'member', 'tenant'),
+  relation: Joi.string().valid('owner', 'tenant'),
   status: Joi.string().valid('active', 'moved_out'),
   move_in_date: Joi.date(),
   move_out_date: Joi.date().allow(null)

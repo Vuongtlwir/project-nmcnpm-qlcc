@@ -4,6 +4,7 @@
 const NotificationFields = {
   id: 'id',
   user_id: 'user_id',
+  sort_order: 'sort_order',
   title: 'title',
   content: 'content',
   type: 'type',

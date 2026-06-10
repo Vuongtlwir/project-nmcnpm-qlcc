@@ -27,10 +27,10 @@ const findByCode = async (code) => {
 };
 
 const create = async (apartment) => {
-  const { code, floor, building, area, num_rooms, status, owner_name, owner_phone } = apartment;
+  const { code, floor, building, area, num_rooms, motorbikes = 0, bicycles = 0, cars = 0, status, owner_name, owner_phone } = apartment;
   const [result] = await db.execute(
-    'INSERT INTO apartments (code, floor, building, area, num_rooms, status, owner_name, owner_phone) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-    [code, floor, building, area, num_rooms, status || 'empty', owner_name || null, owner_phone || null]
+    'INSERT INTO apartments (code, floor, building, area, num_rooms, motorbikes, bicycles, cars, status, owner_name, owner_phone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [code, floor, building, area, num_rooms, motorbikes, bicycles, cars, status || 'empty', owner_name || null, owner_phone || null]
   );
   return result.insertId;
 };

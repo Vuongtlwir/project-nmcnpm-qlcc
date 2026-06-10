@@ -1,6 +1,17 @@
 const residentRepository = require('../repositories/residentRepository');
 const apartmentRepository = require('../repositories/apartmentRepository');
+const userRepository = require('../repositories/userRepository');
+const hashUtils = require('../utils/hash');
 const codeGenerator = require('../utils/generateCode');
+
+const generateRandomPassword = (length = 8) => {
+  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let password = '';
+  for (let i = 0; i < length; i += 1) {
+    password += charset.charAt(Math.floor(Math.random() * charset.length));
+  }
+  return password;
+};
 
 const getResidents = async ({ page = 1, limit = 10, search = '' }) => {
   const pageNum = parseInt(page);
@@ -30,6 +41,14 @@ const getResidentById = async (id) => {
   return resident;
 };
 
+const getResidentByUserId = async (userId) => {
+  const resident = await residentRepository.findByUserId(userId);
+  if (!resident) {
+    throw { status: 404, message: 'Không tìm thấy cư dân', code: 'NOT_FOUND' };
+  }
+  return resident;
+};
+
 const createResident = async (residentData) => {
   // Validate apartment exists
   const apartment = await apartmentRepository.findById(residentData.apartment_id);
@@ -41,6 +60,40 @@ const createResident = async (residentData) => {
   const existingResident = await residentRepository.findByIdCard(residentData.id_card);
   if (existingResident) {
     throw { status: 400, message: 'Số CMND/CCCD đã tồn tại trên hệ thống', code: 'BAD_REQUEST' };
+  }
+
+  let userCredentials = null;
+  if (!residentData.user_id) {
+    const username = residentData.id_card;
+    if (!username) {
+      throw { status: 400, message: 'Số CMND/CCCD là bắt buộc để tạo tài khoản cư dân', code: 'BAD_REQUEST' };
+    }
+
+    const existingUsername = await userRepository.findByUsername(username);
+    if (existingUsername) {
+      throw { status: 400, message: 'Tên đăng nhập cư dân đã tồn tại', code: 'BAD_REQUEST' };
+    }
+
+    if (residentData.email) {
+      const existingEmail = await userRepository.findByEmail(residentData.email);
+      if (existingEmail) {
+        throw { status: 400, message: 'Email cư dân đã tồn tại', code: 'BAD_REQUEST' };
+      }
+    }
+
+    const generatedPassword = generateRandomPassword(8);
+    const hashedPassword = await hashUtils.hashPassword(generatedPassword);
+    const newUserId = await userRepository.create({
+      username,
+      email: residentData.email,
+      password: hashedPassword,
+      role: 'user',
+      full_name: residentData.full_name,
+      phone: residentData.phone || null
+    });
+
+    residentData.user_id = newUserId;
+    userCredentials = { username, password: generatedPassword };
   }
 
   // Generate unique resident code
@@ -68,7 +121,12 @@ const createResident = async (residentData) => {
     await apartmentRepository.update(apartment.id, { status: 'occupied' });
   }
 
-  return { id: insertId, resident_code: residentCode, ...residentData };
+  const result = { id: insertId, resident_code: residentCode, ...residentData };
+  if (userCredentials) {
+    result.user_credentials = userCredentials;
+  }
+
+  return result;
 };
 
 const updateResident = async (id, residentData) => {
@@ -103,16 +161,15 @@ const deleteResident = async (id) => {
   if (!resident) {
     throw { status: 404, message: 'Không tìm thấy cư dân', code: 'NOT_FOUND' };
   }
-
   const success = await residentRepository.deleteById(id);
 
-  // If this was the last resident in the apartment, optionally update apartment status (we keep it simple or user can change it manually)
   return success;
 };
 
 module.exports = {
   getResidents,
   getResidentById,
+  getResidentByUserId,
   createResident,
   updateResident,
   deleteResident

@@ -39,9 +39,23 @@ const changePassword = async (req, res, next) => {
   }
 };
 
+const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return response.error(res, 'Vui lòng nhập email', 'BAD_REQUEST', null, 400);
+    }
+    const result = await authService.forgotPassword(email);
+    return response.success(res, result.message);
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   login,
   register,
   getMe,
-  changePassword
+  changePassword,
+  forgotPassword
 };

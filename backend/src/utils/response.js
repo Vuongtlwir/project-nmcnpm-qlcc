@@ -3,12 +3,17 @@
  */
 
 const success = (res, message, data = null, pagination = null, status = 200) => {
-  // Return data directly to simplify frontend consumption.
-  if (data !== null) {
-    return res.status(status).json(data);
+  const response = {
+    success: true,
+    message,
+    data: data || null
+  };
+  
+  if (pagination) {
+    response.pagination = pagination;
   }
-  // No data provided - return an empty object to maintain valid JSON
-  return res.status(status).json({});
+  
+  return res.status(status).json(response);
 };
 
 const error = (res, message, errCode = 'INTERNAL_ERROR', details = null, status = 500) => {

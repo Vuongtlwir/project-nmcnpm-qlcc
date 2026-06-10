@@ -20,6 +20,19 @@ const getResidentById = async (req, res, next) => {
   }
 };
 
+const getMyResident = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const resident = await residentService.getResidentByUserId(userId);
+    if (!resident) {
+      return response.error(res, 'Không tìm thấy thông tin cư dân của bạn', 'NOT_FOUND', null, 404);
+    }
+    return response.success(res, 'Lấy thông tin cư dân thành công', resident);
+  } catch (err) {
+    next(err);
+  }
+};
+
 const createResident = async (req, res, next) => {
   try {
     const newResident = await residentService.createResident(req.body);
@@ -56,6 +69,7 @@ const deleteResident = async (req, res, next) => {
 module.exports = {
   getAllResidents,
   getResidentById,
+  getMyResident,
   createResident,
   updateResident,
   deleteResident

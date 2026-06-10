@@ -11,8 +11,9 @@ router.get('/', notificationController.getAllNotifications);
 // Mark as read
 router.put('/:id/read', notificationController.markAsRead);
 
-// Create / Delete notification (admin only)
+// Create / Update / Delete notification (admin only)
 router.post('/', authMiddleware.authorize('admin'), notificationController.createNotification);
+router.put('/:id', authMiddleware.authorize('admin'), notificationController.updateNotification);
 router.delete('/:id', authMiddleware.authorize('admin'), notificationController.deleteNotification);
 
 module.exports = router;

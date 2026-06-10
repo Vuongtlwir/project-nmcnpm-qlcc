@@ -10,9 +10,9 @@ const findAll = async ({ limit = 10, offset = 0, search = '' }) => {
   const params = [];
 
   if (search) {
-    query += ` WHERE r.full_name LIKE ? OR r.resident_code LIKE ? OR r.id_card LIKE ? OR r.phone LIKE ?`;
+    query += ` WHERE r.full_name LIKE ? OR r.resident_code LIKE ? OR r.id_card LIKE ? OR r.phone LIKE ? OR u.username LIKE ? OR a.code LIKE ? OR a.building LIKE ?`;
     const searchParam = `%${search}%`;
-    params.push(searchParam, searchParam, searchParam, searchParam);
+    params.push(searchParam, searchParam, searchParam, searchParam, searchParam, searchParam, searchParam);
   }
 
   query += ` ORDER BY r.created_at DESC LIMIT ? OFFSET ?`;
@@ -23,13 +23,15 @@ const findAll = async ({ limit = 10, offset = 0, search = '' }) => {
 };
 
 const countAll = async (search = '') => {
-  let query = 'SELECT COUNT(*) as count FROM residents r';
+  let query = `SELECT COUNT(*) as count FROM residents r
+    LEFT JOIN users u ON r.user_id = u.id
+    LEFT JOIN apartments a ON r.apartment_id = a.id`;
   const params = [];
 
   if (search) {
-    query += ` WHERE r.full_name LIKE ? OR r.resident_code LIKE ? OR r.id_card LIKE ? OR r.phone LIKE ?`;
+    query += ` WHERE r.full_name LIKE ? OR r.resident_code LIKE ? OR r.id_card LIKE ? OR r.phone LIKE ? OR u.username LIKE ? OR a.code LIKE ? OR a.building LIKE ?`;
     const searchParam = `%${search}%`;
-    params.push(searchParam, searchParam, searchParam, searchParam);
+    params.push(searchParam, searchParam, searchParam, searchParam, searchParam, searchParam, searchParam);
   }
 
   const [rows] = await db.query(query, params);
@@ -38,13 +40,25 @@ const countAll = async (search = '') => {
 
 const findById = async (id) => {
   const query = `
-    SELECT r.*, a.code AS apartment_code, a.building AS apartment_building, u.username AS linked_username 
+    SELECT r.*, a.code AS apartment_code, a.building AS apartment_building, a.status AS apartment_status, u.username AS linked_username 
     FROM residents r
     JOIN apartments a ON r.apartment_id = a.id
     LEFT JOIN users u ON r.user_id = u.id
     WHERE r.id = ?
   `;
   const [rows] = await db.execute(query, [id]);
+  return rows[0] || null;
+};
+
+const findByUserId = async (userId) => {
+  const query = `
+    SELECT r.*, a.code AS apartment_code, a.building AS apartment_building, a.status AS apartment_status, u.username AS linked_username 
+    FROM residents r
+    JOIN apartments a ON r.apartment_id = a.id
+    LEFT JOIN users u ON r.user_id = u.id
+    WHERE r.user_id = ?
+  `;
+  const [rows] = await db.execute(query, [userId]);
   return rows[0] || null;
 };
 
@@ -103,6 +117,7 @@ module.exports = {
   findAll,
   countAll,
   findById,
+  findByUserId,
   findByIdCard,
   create,
   update,

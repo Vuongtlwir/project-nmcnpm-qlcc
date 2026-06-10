@@ -26,6 +26,15 @@ const markAsRead = async (id) => {
   return notificationRepository.update(id, { is_read: 1 });
 };
 
+const updateNotification = async (id, notificationData) => {
+  const notification = await notificationRepository.findById(id);
+  if (!notification) {
+    throw { status: 404, message: 'Không tìm thấy thông báo', code: 'NOT_FOUND' };
+  }
+
+  return notificationRepository.update(id, notificationData);
+};
+
 const deleteNotification = async (id) => {
   const notification = await notificationRepository.findById(id);
   if (!notification) {
@@ -40,5 +49,6 @@ module.exports = {
   getNotificationById,
   createNotification,
   markAsRead,
+  updateNotification,
   deleteNotification
 };

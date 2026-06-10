@@ -13,6 +13,7 @@ const getComplaintById = async (id) => {
 };
 
 const createComplaint = async (complaintData) => {
+  complaintData.type = complaintData.type || 'Khác';
   const insertId = await complaintRepository.create(complaintData);
   return { id: insertId, ...complaintData };
 };
