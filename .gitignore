@@ -18,3 +18,8 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Database
+update_password.sql
+
+

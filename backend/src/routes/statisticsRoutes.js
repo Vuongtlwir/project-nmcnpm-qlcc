@@ -10,5 +10,6 @@ router.use(authMiddleware.authorize('admin'));
 router.get('/overview', statisticsController.getOverview);
 router.get('/revenue', statisticsController.getRevenue);
 router.get('/fee-collection', statisticsController.getFeeCollection);
+router.get('/apartment-status', statisticsController.getApartmentStatus);
 
 module.exports = router;

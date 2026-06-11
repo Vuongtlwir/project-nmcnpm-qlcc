@@ -30,6 +30,11 @@ export async function payFee(id, paymentData) {
   return response.data?.data || response.data || { success: true };
 }
 
+export async function confirmPayment(id) {
+  const response = await api.put(`/payments/${id}/confirm`);
+  return response.data?.data || response.data || { success: true };
+}
+
 export async function getPaymentHistory(query = {}) {
   try {
     const response = await api.get("/payments", { params: query });

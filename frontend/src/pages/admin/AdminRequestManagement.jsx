@@ -130,8 +130,8 @@ export default function AdminRequestManagement() {
         </div>
       )}
 
-      <div className="table-responsive">
-        <table className="data-table">
+      <div className="table-container">
+        <table className="custom-table">
           <thead>
             <tr>
               <th>ID</th>

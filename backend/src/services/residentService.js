@@ -3,6 +3,7 @@ const apartmentRepository = require('../repositories/apartmentRepository');
 const userRepository = require('../repositories/userRepository');
 const hashUtils = require('../utils/hash');
 const codeGenerator = require('../utils/generateCode');
+const mailService = require('./mailService');
 
 const generateRandomPassword = (length = 8) => {
   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -94,6 +95,15 @@ const createResident = async (residentData) => {
 
     residentData.user_id = newUserId;
     userCredentials = { username, password: generatedPassword };
+
+    if (residentData.email) {
+      mailService.sendNewAccountEmail({
+        email: residentData.email,
+        username,
+        password: generatedPassword,
+        fullName: residentData.full_name,
+      });
+    }
   }
 
   // Generate unique resident code
@@ -116,9 +126,15 @@ const createResident = async (residentData) => {
 
   const insertId = await residentRepository.create(newResident);
 
-  // Update apartment status to 'occupied' if it is empty/maintenance
-  if (apartment.status !== 'occupied') {
-    await apartmentRepository.update(apartment.id, { status: 'occupied' });
+  // Update apartment status based on resident relationship
+  if (residentData.relation === 'owner') {
+    if (apartment.status !== 'sold') {
+      await apartmentRepository.update(apartment.id, { status: 'sold' });
+    }
+  } else if (residentData.relation === 'tenant') {
+    if (apartment.status !== 'occupied') {
+      await apartmentRepository.update(apartment.id, { status: 'occupied' });
+    }
   }
 
   const result = { id: insertId, resident_code: residentCode, ...residentData };
@@ -161,7 +177,13 @@ const deleteResident = async (id) => {
   if (!resident) {
     throw { status: 404, message: 'Không tìm thấy cư dân', code: 'NOT_FOUND' };
   }
+
+  const apartmentId = resident.apartment_id;
   const success = await residentRepository.deleteById(id);
+
+  if (success && apartmentId) {
+    await apartmentRepository.update(apartmentId, { status: 'empty' });
+  }
 
   return success;
 };

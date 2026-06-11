@@ -1,6 +1,6 @@
 ﻿import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import api from "../../services/api";
+import { getFees, getPaymentHistory } from "../../services/feeService";
 
 const typeLabels = {
   general: "Chung",
@@ -11,77 +11,111 @@ const typeLabels = {
 
 export default function UserHome() {
   const [notifications, setNotifications] = useState([]);
+  const [stats, setStats] = useState({ fees: 0, paid: 0, pending: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadNotifications() {
+    async function loadData() {
       try {
-        const response = await api.get("/notifications");
-        setNotifications(response.data?.data || []);
+        const [notifResponse, feeData, paymentData] = await Promise.all([
+          api.get("/notifications"),
+          getFees(),
+          getPaymentHistory(),
+        ]);
+
+        setNotifications(notifResponse.data?.data || []);
+
+        const payments = paymentData || [];
+        const fees = feeData || [];
+        const paid = fees.filter((f) =>
+          payments.some((p) => p.fee_id === f.id && p.status === "paid")
+        ).length;
+        const pending = fees.filter((f) =>
+          payments.some((p) => p.fee_id === f.id && p.status === "pending")
+        ).length;
+
+        setStats({ fees: fees.length, paid, pending });
       } catch (error) {
-        console.error("Không thể tải thông báo:", error);
+        console.error("Không thể tải dữ liệu:", error);
       } finally {
         setLoading(false);
       }
     }
 
-    loadNotifications();
+    loadData();
   }, []);
 
   return (
-    <section className="welcome-card page-card">
-      <div className="page-card-header">
-        <h2>Chào mừng đến với trang cư dân</h2>
-        <p>Quản lý thanh toán, phản ánh và hồ sơ của bạn trong một giao diện trực quan.</p>
+    <>
+      <div className="welcome-hero">
+        <div className="welcome-hero-content">
+          <h2>Chào mừng trở lại</h2>
+          <p>Quản lý thanh toán, phản ánh và thông tin cá nhân của bạn tại đây.</p>
+
+          <div className="welcome-stats">
+            <div className="stat-card">
+              <div className="stat-icon blue">📋</div>
+              <div className="stat-info">
+                <div className="stat-label">Tổng hóa đơn</div>
+                <div className="stat-value">{loading ? "..." : stats.fees}</div>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon green">✅</div>
+              <div className="stat-info">
+                <div className="stat-label">Đã thanh toán</div>
+                <div className="stat-value">{loading ? "..." : stats.paid}</div>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon amber">⏳</div>
+              <div className="stat-info">
+                <div className="stat-label">Chờ xác nhận</div>
+                <div className="stat-value">{loading ? "..." : stats.pending}</div>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon purple">📢</div>
+              <div className="stat-info">
+                <div className="stat-label">Thông báo</div>
+                <div className="stat-value">{loading ? "..." : notifications.length}</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div style={{ marginTop: 28 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-          <div>
-            <h3 style={{ margin: 0, fontSize: "1.05rem" }}>Thông báo mới</h3>
-            <p style={{ margin: "6px 0 0", color: "#6b7280" }}>
-              Hiển thị các thông báo từ hệ thống theo thứ tự ưu tiên của admin.
-            </p>
-          </div>
-          <span style={{ color: "#475569", fontWeight: 600 }}>
-            {loading ? "Đang tải..." : `${notifications.length} thông báo`}
-          </span>
+      <div className="notifications-section">
+        <div className="notifications-section-header">
+          <h3>Thông báo mới nhất</h3>
+          <span>{loading ? "Đang tải..." : `${notifications.length} thông báo`}</span>
         </div>
 
         {loading ? (
-          <div style={{ marginTop: 20, color: "#6b7280" }}>Đang tải thông báo...</div>
+          <div style={{ color: "#64748b", padding: "20px 0" }}>Đang tải thông báo...</div>
         ) : notifications.length === 0 ? (
-          <div style={{ marginTop: 20, color: "#6b7280" }}>Hiện chưa có thông báo nào.</div>
+          <div style={{ color: "#64748b", padding: "20px 0" }}>Hiện chưa có thông báo nào.</div>
         ) : (
-          <div style={{ marginTop: 20, display: "grid", gap: 16 }}>
-            {notifications.map((notification) => (
-              <article
-                key={notification.id}
-                style={{
-                  background: "var(--bg)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 16,
-                  padding: 20,
-                  boxShadow: "var(--shadow-sm)",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
-                  <div>
-                    <h4 style={{ margin: 0, fontSize: "1rem" }}>{notification.title}</h4>
-                    <p style={{ margin: "8px 0 0", color: "#475569", fontSize: "0.95rem" }}>
-                      {typeLabels[notification.type] || notification.type} • {new Date(notification.created_at).toLocaleDateString("vi-VN")} • {new Date(notification.created_at).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
-                    </p>
-                  </div>
-                  <span style={{ background: "#eef2ff", color: "#3730a3", borderRadius: 9999, padding: "6px 12px", fontSize: "0.85rem", fontWeight: 600 }}>
-                    {notification.is_read ? "Đã đọc" : "Chưa đọc"}
-                  </span>
-                </div>
-                <p style={{ margin: "16px 0 0", color: "#334155", lineHeight: 1.7 }}>{notification.content}</p>
-              </article>
-            ))}
-          </div>
+          notifications.map((notif) => (
+            <div key={notif.id} className="notification-card">
+              <div className="notification-card-header">
+                <h4>{notif.title}</h4>
+                <span className={`notification-type-badge ${notif.type || "general"}`}>
+                  {typeLabels[notif.type] || "Chung"}
+                </span>
+              </div>
+              <p className="notification-meta">
+                {new Date(notif.created_at).toLocaleDateString("vi-VN")} •{" "}
+                {new Date(notif.created_at).toLocaleTimeString("vi-VN", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
+              <p className="notification-content">{notif.content}</p>
+            </div>
+          ))
         )}
       </div>
-    </section>
+    </>
   );
 }

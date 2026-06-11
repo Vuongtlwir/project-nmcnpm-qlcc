@@ -192,7 +192,7 @@ export default function NotificationList() {
                   <td>{item.title}</td>
                   <td>{typeLabels[item.type] || item.type}</td>
                   <td>{new Date(item.created_at).toLocaleDateString('vi-VN')}</td>
-                  <td className="action-buttons" style={{ display: 'flex', gap: '0.5rem' }}>
+                  <td className="cell-action">
                     <button
                       className="secondary-btn"
                       type="button"
@@ -234,69 +234,205 @@ export default function NotificationList() {
         title={modalTitle}
         onClose={closeModal}
         onConfirm={handleSaveNotification}
-        confirmText={modalMode === "create" ? "Thêm" : "Lưu"}
+        confirmText={modalMode === "create" ? "Thêm tin tức" : "Lưu thay đổi"}
         cancelText="Hủy"
         loading={saving}
+        wide
       >
-        <div
-          style={{
-            display: 'grid',
-            gap: '18px',
-            gridTemplateColumns: '1fr 1fr',
-            alignItems: 'start'
-          }}
-        >
-          <div className="form-group" style={{ display: 'flex', flexDirection: 'column' }}>
-            <label htmlFor="news-sort-order">Sắp xếp</label>
-            <input
-              id="news-sort-order"
-              type="number"
-              min="0"
-              value={currentNews.sort_order}
-              onChange={(event) => setCurrentNews({ ...currentNews, sort_order: Number(event.target.value) })}
-              placeholder="Nhập số để ưu tiên hiển thị"
-            />
-            <small style={{ marginTop: 6, color: '#475569' }}>
-              Giá trị nhỏ hơn sẽ xuất hiện trước.
-            </small>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+          <div style={{
+            background: '#f8fafc',
+            borderRadius: 12,
+            padding: 20,
+            border: '1px solid #e2e8f0',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <span style={{ fontSize: 18 }}>📰</span>
+              <span style={{ fontWeight: 600, fontSize: '0.95rem', color: '#0f172a' }}>Thông tin cơ bản</span>
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label htmlFor="news-title" style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: 6 }}>
+                Tiêu đề tin tức <span style={{ color: '#ef4444' }}>*</span>
+              </label>
+              <input
+                id="news-title"
+                type="text"
+                value={currentNews.title}
+                onChange={(event) => setCurrentNews({ ...currentNews, title: event.target.value })}
+                placeholder="Nhập tiêu đề tin tức..."
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  fontSize: '1.1rem',
+                  fontWeight: 600,
+                  border: '2px solid #e2e8f0',
+                  borderRadius: 10,
+                  outline: 'none',
+                  background: '#fff',
+                  color: '#0f172a',
+                  transition: 'border-color 0.2s',
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+              <div style={{ minWidth: 140 }}>
+                <label htmlFor="news-sort-order" style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: 6 }}>
+                  Thứ tự sắp xếp
+                </label>
+                <input
+                  id="news-sort-order"
+                  type="number"
+                  min="0"
+                  value={currentNews.sort_order}
+                  onChange={(event) => setCurrentNews({ ...currentNews, sort_order: Number(event.target.value) })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    fontSize: '0.9rem',
+                    border: '2px solid #e2e8f0',
+                    borderRadius: 10,
+                    outline: 'none',
+                    background: '#fff',
+                    color: '#0f172a',
+                    transition: 'border-color 0.2s',
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                  onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                />
+                <small style={{ display: 'block', marginTop: 4, color: '#64748b', fontSize: '0.8rem' }}>
+                  Số nhỏ → hiển thị trước
+                </small>
+              </div>
+
+              <div style={{ flex: 1, minWidth: 200 }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: 8 }}>
+                  Danh mục
+                </label>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {[
+                    { value: 'general', label: 'Chung', color: '#3b82f6', bg: '#eff6ff' },
+                    { value: 'fee', label: 'Phí', color: '#f59e0b', bg: '#fffbeb' },
+                    { value: 'maintenance', label: 'Bảo trì', color: '#10b981', bg: '#ecfdf5' },
+                    { value: 'event', label: 'Sự kiện', color: '#8b5cf6', bg: '#f5f3ff' },
+                  ].map((cat) => (
+                    <button
+                      key={cat.value}
+                      type="button"
+                      onClick={() => setCurrentNews({ ...currentNews, type: cat.value })}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: 20,
+                        border: currentNews.type === cat.value ? `2px solid ${cat.color}` : '2px solid #e2e8f0',
+                        background: currentNews.type === cat.value ? cat.bg : '#fff',
+                        color: currentNews.type === cat.value ? cat.color : '#64748b',
+                        fontWeight: currentNews.type === cat.value ? 600 : 500,
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="form-group" style={{ display: 'flex', flexDirection: 'column' }}>
-            <label htmlFor="news-type">Danh mục</label>
-            <select
-              id="news-type"
-              value={currentNews.type}
-              onChange={(event) => setCurrentNews({ ...currentNews, type: event.target.value })}
-            >
-              <option value="general">Chung</option>
-              <option value="fee">Phí</option>
-              <option value="maintenance">Bảo trì</option>
-              <option value="event">Sự kiện</option>
-            </select>
-          </div>
+          <div style={{
+            background: '#f8fafc',
+            borderRadius: 12,
+            padding: 20,
+            border: '1px solid #e2e8f0',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 18 }}>📝</span>
+                <span style={{ fontWeight: 600, fontSize: '0.95rem', color: '#0f172a' }}>Nội dung</span>
+              </div>
+              <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                {currentNews.content.length} ký tự
+              </span>
+            </div>
 
-          <div className="form-group" style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column' }}>
-            <label htmlFor="news-title">Tiêu đề</label>
-            <input
-              id="news-title"
-              type="text"
-              value={currentNews.title}
-              onChange={(event) => setCurrentNews({ ...currentNews, title: event.target.value })}
-              placeholder="Nhập tiêu đề tin tức"
-            />
-          </div>
-
-          <div className="form-group" style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column' }}>
-            <label htmlFor="news-content">Nội dung</label>
             <textarea
               id="news-content"
-              rows="5"
+              rows="6"
               value={currentNews.content}
               onChange={(event) => setCurrentNews({ ...currentNews, content: event.target.value })}
-              placeholder="Nhập nội dung chi tiết của tin tức"
-              style={{ minHeight: 130, resize: 'vertical' }}
+              placeholder="Nhập nội dung chi tiết của tin tức..."
+              style={{
+                width: '100%',
+                minHeight: 160,
+                padding: '14px 16px',
+                fontSize: '0.95rem',
+                lineHeight: 1.7,
+                border: '2px solid #e2e8f0',
+                borderRadius: 10,
+                outline: 'none',
+                background: '#fff',
+                color: '#0f172a',
+                resize: 'vertical',
+                fontFamily: 'inherit',
+                transition: 'border-color 0.2s',
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+              onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
             />
           </div>
+
+          {currentNews.title || currentNews.content ? (
+            <div style={{
+              background: '#fff',
+              borderRadius: 12,
+              padding: 20,
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                <span style={{ fontSize: 18 }}>👁️</span>
+                <span style={{ fontWeight: 600, fontSize: '0.95rem', color: '#0f172a' }}>Xem trước</span>
+              </div>
+
+              <div style={{
+                border: '1px solid #e2e8f0',
+                borderRadius: 10,
+                overflow: 'hidden',
+              }}>
+                <div style={{
+                  padding: '12px 16px',
+                  background: '#f8fafc',
+                  borderBottom: '1px solid #e2e8f0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                }}>
+                  <span style={{
+                    display: 'inline-block',
+                    padding: '3px 10px',
+                    borderRadius: 12,
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    background: currentNews.type === 'general' ? '#eff6ff' : currentNews.type === 'fee' ? '#fffbeb' : currentNews.type === 'maintenance' ? '#ecfdf5' : '#f5f3ff',
+                    color: currentNews.type === 'general' ? '#3b82f6' : currentNews.type === 'fee' ? '#f59e0b' : currentNews.type === 'maintenance' ? '#10b981' : '#8b5cf6',
+                  }}>
+                    {typeLabels[currentNews.type] || 'Chung'}
+                  </span>
+                  <span style={{ fontWeight: 600, fontSize: '0.95rem', color: '#0f172a' }}>
+                    {currentNews.title || '(Chưa có tiêu đề)'}
+                  </span>
+                </div>
+                <div style={{ padding: '14px 16px', fontSize: '0.9rem', lineHeight: 1.7, color: '#334155', whiteSpace: 'pre-wrap' }}>
+                  {currentNews.content || <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>Chưa có nội dung...</span>}
+                </div>
+              </div>
+            </div>
+          ) : null}
         </div>
       </Modal>
     </section>

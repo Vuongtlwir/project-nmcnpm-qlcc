@@ -1,17 +1,27 @@
 const db = require('../config/database');
 
-const findAll = async ({ search = '' }) => {
+const findAll = async ({ search = '', apartmentId = null }) => {
   let query = `
     SELECT f.*, a.code AS apartment_code 
     FROM fees f
     LEFT JOIN apartments a ON f.apartment_id = a.id
   `;
   const params = [];
+  const conditions = [];
 
   if (search) {
-    query += ' WHERE f.name LIKE ? OR f.fee_code LIKE ?';
+    conditions.push('(f.name LIKE ? OR f.fee_code LIKE ?)');
     const searchParam = `%${search}%`;
     params.push(searchParam, searchParam);
+  }
+
+  if (apartmentId != null) {
+    conditions.push('(f.apartment_id = ? OR f.apartment_id IS NULL)');
+    params.push(apartmentId);
+  }
+
+  if (conditions.length > 0) {
+    query += ' WHERE ' + conditions.join(' AND ');
   }
 
   query += ' ORDER BY f.due_date DESC';

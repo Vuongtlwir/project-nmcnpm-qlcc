@@ -3,8 +3,8 @@ const response = require('../utils/response');
 
 const getAllFees = async (req, res, next) => {
   try {
-    const { search = '' } = req.query;
-    const fees = await feeService.getFees({ search });
+    const { search = '', apartment_id } = req.query;
+    const fees = await feeService.getFees({ search, apartmentId: apartment_id != null ? apartment_id : null });
     return response.success(res, 'Lấy danh sách khoản thu thành công', fees);
   } catch (err) {
     next(err);
@@ -53,10 +53,25 @@ const deleteFee = async (req, res, next) => {
   }
 };
 
+const payFee = async (req, res, next) => {
+  try {
+    const { method } = req.body;
+    const result = await feeService.payFee({
+      feeId: req.params.id,
+      userId: req.user.id,
+      method: method || 'card'
+    });
+    return response.success(res, 'Gửi yêu cầu thanh toán thành công', result, null, 201);
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   getAllFees,
   getFeeById,
   createFee,
   updateFee,
-  deleteFee
+  deleteFee,
+  payFee
 };

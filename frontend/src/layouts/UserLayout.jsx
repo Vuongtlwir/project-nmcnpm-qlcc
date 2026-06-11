@@ -1,54 +1,78 @@
 ﻿import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import useUnreadMessages from "../hooks/useUnreadMessages";
 import "../assets/css/user.css";
 import Footer from "../components/Footer";
 
-export default function UserLayout({ children }) {
-  const { logout } = useAuth();
+export default function UserLayout() {
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const unreadCount = useUnreadMessages();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
+  const initials = user?.full_name
+    ? user.full_name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)
+    : user?.username?.slice(0, 2).toUpperCase() || "U";
+
+  const navItems = [
+    { to: "/", label: "Trang chủ" },
+    { to: "/fees", label: "Hóa đơn" },
+    { to: "/complaints", label: "Phản ánh" },
+    { to: "/chat", label: "Tin nhắn" },
+    { to: "/profile", label: "Hồ sơ" },
+  ];
+
   return (
     <div className="user-layout" data-theme="light">
       <header className="user-header">
         <div className="brand-block">
-          <div className="brand-badge">USER</div>
-          <div>
-            <h1>Apartment Manager</h1>
-            <p>Giao diện cư dân chuyên nghiệp, trực quan và dễ sử dụng.</p>
+          <div className="brand-badge">EC</div>
+          <div className="brand-text">
+            <h1>Eternis City</h1>
+            <p>Hệ thống quản lý </p>
           </div>
         </div>
 
         <div className="header-actions">
-          <a href="#" className="action-link">Thông báo</a>
-          <a href="#" className="action-button">Hỗ trợ</a>
-          <button type="button" className="action-button" onClick={handleLogout}>
+          <div className="header-user">
+            <div className="header-user-avatar">{initials}</div>
+            <span className="header-user-name">{user?.full_name || user?.username || "User"}</span>
+          </div>
+          <button type="button" className="logout-btn" onClick={handleLogout}>
             Đăng xuất
           </button>
         </div>
       </header>
 
-      <div className="user-nav">
-        <NavLink to="/" end className={({ isActive }) => isActive ? "active" : ""}>
-          Trang chủ
-        </NavLink>
-        <NavLink to="/fees" className={({ isActive }) => isActive ? "active" : ""}>
-          Hóa đơn
-        </NavLink>
-        <NavLink to="/complaints" className={({ isActive }) => isActive ? "active" : ""}>
-          Phản ánh
-        </NavLink>
-        <NavLink to="/chat" className={({ isActive }) => isActive ? "active" : ""}>
-          Chat với quản trị viên
-        </NavLink>
-        <NavLink to="/profile" className={({ isActive }) => isActive ? "active" : ""}>
-          Hồ sơ
-        </NavLink>
-      </div>
+      <nav className="user-nav">
+        {navItems.map((item) => (
+          <NavLink key={item.to} to={item.to} end={item.to === "/"} style={{ position: "relative" }}>
+            {item.label}
+            {item.to === "/chat" && unreadCount > 0 && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: 6,
+                  right: 2,
+                  background: "#ef4444",
+                  color: "white",
+                  borderRadius: 999,
+                  padding: "1px 6px",
+                  fontSize: "0.65rem",
+                  fontWeight: 700,
+                  lineHeight: "16px",
+                }}
+              >
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
+          </NavLink>
+        ))}
+      </nav>
 
       <main className="user-content">
         <Outlet />

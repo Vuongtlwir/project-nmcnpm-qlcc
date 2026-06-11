@@ -3,15 +3,15 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Modal from "../../components/Modal";
 import { deleteResident, getResidentById, getMyResident } from "../../services/residentService";
+import { getFees, getPaymentHistory } from "../../services/feeService";
 import { changePassword } from "../../services/authService";
-import { updateApartment } from "../../services/apartmentService";
 
-const apartmentStatusOptions = [
-  { value: "empty", label: "Trống" },
-  { value: "occupied", label: "Đang thuê" },
-  { value: "maintenance", label: "Bảo trì" },
-  { value: "sold", label: "Đã bán" }
-];
+const statusColors = {
+  empty: "#64748b",
+  occupied: "#16a34a",
+  maintenance: "#ea580c",
+  sold: "#dc2626",
+};
 
 const formatStatus = (status) => {
   if (status === "empty") return "Trống";
@@ -21,366 +21,277 @@ const formatStatus = (status) => {
   return status || "N/A";
 };
 
-const serviceFees = [
-  { id: "F-001", label: "Phí vệ sinh tháng 6", amount: 1250000 },
-  { id: "F-002", label: "Tiền điện tháng 5", amount: 850000 },
-  { id: "F-003", label: "Tiền nước tháng 5", amount: 420000 }
-];
-
 export default function ResidentDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
   const [resident, setResident] = useState(undefined);
-  const [apartmentStatus, setApartmentStatus] = useState("");
-  const [statusSaving, setStatusSaving] = useState(false);
-  const [statusMessage, setStatusMessage] = useState("");
-  const [isNotifyModalOpen, setIsNotifyModalOpen] = useState(false);
-  const [selectedFeeId, setSelectedFeeId] = useState(serviceFees[0].id);
-  const [additionalFee, setAdditionalFee] = useState(0);
+  const [loadError, setLoadError] = useState("");
+  const [fees, setFees] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [loadingFees, setLoadingFees] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [passwordError, setPasswordError] = useState("");
-    const { user } = useAuth();
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
-    useEffect(() => {
-      const loadResident = async () => {
-        setResident(undefined);
-      
+  useEffect(() => {
+    const loadResident = async () => {
+      setResident(undefined);
+      setLoadError("");
+
+      try {
         if (!id) {
-          // Load current user's profile
           const data = await getMyResident();
           setResident(data);
-          return;
+        } else {
+          const data = await getResidentById(id);
+          setResident(data);
         }
-
-        // Load specific resident by id (admin mode)
-        const data = await getResidentById(id);
-        setResident(data);
-      };
-
-      loadResident();
-    }, [id]);
-
-    useEffect(() => {
-      if (resident?.apartment_status) {
-        setApartmentStatus(resident.apartment_status);
+      } catch (err) {
+        const msg = err?.response?.data?.message || err?.message || "Không thể tải thông tin.";
+        setLoadError(msg);
+        setResident(null);
       }
-    }, [resident]);
-
-    const handleDelete = async () => {
-      if (!resident) return;
-      const confirmed = window.confirm("Bạn có chắc chắn muốn xóa cư dân này không?");
-      if (!confirmed) return;
-
-      await deleteResident(resident.id);
-      navigate("/admin/residents");
     };
 
-    const openFeeNotification = () => {
-      setSelectedFeeId(serviceFees[0].id);
-      setAdditionalFee(0);
-      setIsNotifyModalOpen(true);
-    };
+    loadResident();
+  }, [id]);
 
-    const formatMoney = (value) =>
-      value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+  useEffect(() => {
+    if (resident?.apartment_id) {
+      const loadFees = async () => {
+        setLoadingFees(true);
+        try {
+          const [feeData, paymentData] = await Promise.all([
+            getFees({ apartment_id: resident.apartment_id }),
+            getPaymentHistory(),
+          ]);
+          setFees(feeData || []);
+          setPayments(paymentData || []);
+        } catch (err) {
+          console.error("Lỗi tải danh sách phí:", err);
+        } finally {
+          setLoadingFees(false);
+        }
+      };
+      loadFees();
+    }
+  }, [resident]);
 
-    const selectedFee = serviceFees.find((item) => item.id === selectedFeeId) || serviceFees[0];
-    const baseAmount = selectedFee.amount;
-    const totalAmount = baseAmount + Number(additionalFee || 0);
+  const getFeeStatus = (feeId) => {
+    const payment = payments.find((p) => p.fee_id === feeId);
+    return payment ? payment.status : null;
+  };
 
-    const handleSendFeeNotification = () => {
-      const targetResident = resident;
-      if (!targetResident) return;
+  const handleDelete = async () => {
+    if (!resident) return;
+    if (!window.confirm("Bạn có chắc chắn muốn xóa cư dân này không?")) return;
+    await deleteResident(resident.id);
+    navigate("/admin/residents");
+  };
 
-      window.alert(
-        `Đã gửi thông báo phí căn hộ cho ${targetResident.full_name || targetResident.username} (${targetResident.apartment_code || targetResident.apartment_building || 'N/A'}).\n` +
-        `Loại phí: ${selectedFee.label}\n` +
-        `Số tiền: ${formatMoney(baseAmount)}\n` +
-        `Phí phát sinh: ${formatMoney(Number(additionalFee || 0))}\n` +
-        `Tổng: ${formatMoney(totalAmount)}`
-      );
-      setIsNotifyModalOpen(false);
-    };
+  const formatMoney = (value) =>
+    Number(value).toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 
-    const handleOpenChangePassword = () => {
-      setPasswordError("");
+  const handleChangePassword = async () => {
+    if (!oldPassword || !newPassword) {
+      setPasswordError("Vui lòng nhập mật khẩu cũ và mật khẩu mới.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError("Mật khẩu mới và xác nhận mật khẩu không khớp.");
+      return;
+    }
+    try {
+      await changePassword({ oldPassword, newPassword });
+      window.alert("Đổi mật khẩu thành công.");
+      setIsChangePasswordOpen(false);
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      setIsChangePasswordOpen(true);
-    };
-
-    const handleChangePassword = async () => {
-      if (!oldPassword || !newPassword) {
-        setPasswordError("Vui lòng nhập mật khẩu cũ và mật khẩu mới.");
-        return;
-      }
-      if (newPassword !== confirmPassword) {
-        setPasswordError("Mật khẩu mới và xác nhận mật khẩu không khớp.");
-        return;
-      }
-
-      try {
-        await changePassword({ oldPassword, newPassword });
-        window.alert("Đổi mật khẩu thành công.");
-        setIsChangePasswordOpen(false);
-        setOldPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-        setPasswordError("");
-      } catch (err) {
-        const apiMessage = err?.response?.data?.message || err?.message || "Lỗi khi đổi mật khẩu.";
-        setPasswordError(apiMessage);
-      }
-    };
-
-    const profileTitle = !id ? "Hồ sơ của bạn" : "Hồ sơ cư dân";
-    const profile = resident || user;
-    const profileAvatar = (profile?.full_name || profile?.username || "NG").slice(0, 2).toUpperCase();
-    const profileName = profile?.full_name || profile?.username || "Người dùng";
-    const profileUnit = resident
-      ? `${resident.apartment_code || ''}${resident.apartment_building ? ` - ${resident.apartment_building}` : ''}`.trim()
-      : null;
-    const profileIdNumber = resident?.id_card || profile?.username || "N/A";
-    const profileUsername = profile?.username || "N/A";
-    const profileEmail = profile?.email || "N/A";
-    const profilePhone = profile?.phone || "N/A";
-    const profileStatus = resident?.apartment_status
-      ? formatStatus(resident.apartment_status)
-      : resident?.status || (user ? (user.role === 'admin' ? 'Quản trị viên' : 'Đang hoạt động') : 'N/A');
-
-    if (resident === undefined) {
-      return (
-        <section className="page-card">
-          <div className="page-card-header">
-            <h2>{profileTitle}</h2>
-            <p>Đang tải thông tin...</p>
-          </div>
-        </section>
-      );
+      setPasswordError("");
+    } catch (err) {
+      setPasswordError(err?.response?.data?.message || err?.message || "Lỗi khi đổi mật khẩu.");
     }
+  };
 
-    if (!profile) {
-      return (
-        <section className="page-card">
-          <div className="page-card-header">
-            <h2>{profileTitle}</h2>
-            <p>Quản lý thông tin cá nhân và tài khoản của bạn.</p>
-          </div>
-          <div className="profile-summary">
-            <div className="profile-card">
-              <h3>Không có dữ liệu hồ sơ</h3>
-              <p>Vui lòng đăng nhập lại hoặc liên hệ quản trị viên để cập nhật thông tin.</p>
-            </div>
-          </div>
-        </section>
-      );
-    }
+  const profile = resident || user;
+  const initials = (profile?.full_name || profile?.username || profile?.linked_username || "NG").slice(0, 2).toUpperCase();
+  const displayName = profile?.full_name || profile?.username || profile?.linked_username || "Người dùng";
+  const displayUnit = resident
+    ? `${resident.apartment_code || ""}${resident.apartment_building ? ` - ${resident.apartment_building}` : ""}`.trim()
+    : null;
+  const displayIdCard = resident?.id_card || "—";
+  const displayUsername = profile?.username || profile?.linked_username || "—";
+  const displayEmail = profile?.email || "—";
+  const displayPhone = profile?.phone || "—";
+  const accountType = user?.role === "admin" ? "Quản trị viên" : "Cư dân";
 
-    return (
-      <section className="page-card">
-        <div className="page-card-header">
-          <h2>{profileTitle}</h2>
-          <p>Thông tin chi tiết cư dân và tài khoản của bạn.</p>
+  let displayStatus = "—";
+  if (resident?.apartment_status) {
+    displayStatus = formatStatus(resident.apartment_status);
+  } else if (resident?.status) {
+    displayStatus = resident.status;
+  } else if (user?.role === "admin") {
+    displayStatus = "Quản trị viên";
+  } else {
+    displayStatus = "Đang hoạt động";
+  }
+
+  const residentStatus = resident?.apartment_status || resident?.status || null;
+  const statusColor = residentStatus ? statusColors[residentStatus] || "#64748b" : "#16a34a";
+
+  const isLoading = resident === undefined;
+  const hasNoData = !profile;
+
+  return (
+    <section className="profile-page">
+      {isLoading ? (
+        <div className="profile-loader">
+          <div className="profile-loader-spinner" />
+          <p>Đang tải thông tin...</p>
         </div>
-
-        <div className="profile-summary">
-          <div className="profile-card">
-            <div className="profile-avatar">{profileAvatar}</div>
-            <div className="profile-details">
-              <div>
-                <h3>{profileName}</h3>
-                {profileUnit && (
-                  <p style={{ color: "#6b7280", marginTop: "8px" }}>{profileUnit}</p>
-                )}
+      ) : hasNoData ? (
+        <div className="profile-empty">
+          <div className="profile-empty-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <h3>Không có dữ liệu hồ sơ</h3>
+          {loadError && <p className="profile-empty-error">{loadError}</p>}
+          <p>Vui lòng đăng nhập lại hoặc liên hệ quản trị viên.</p>
+        </div>
+      ) : (
+        <>
+          <div className="profile-cover">
+            <div className="profile-cover-bg" />
+            <div className="profile-cover-content">
+              <div className="profile-avatar-lg">{initials}</div>
+              <div className="profile-cover-info">
+                <h1>{displayName}</h1>
+                {displayUnit && <p className="profile-cover-unit">{displayUnit}</p>}
+                <span className="profile-status-badge" style={{ background: statusColor }}>{displayStatus}</span>
               </div>
-              <div className="profile-row">
-                <span>Số căn cước</span>
-                <span className="detail-value">{profileIdNumber}</span>
-              </div>
-              <div className="profile-row">
-                <span>Username</span>
-                <span className="detail-value">{profileUsername}</span>
-              </div>
+              {!id && (
+                <button type="button" className="profile-cover-action" onClick={() => setIsChangePasswordOpen(true)}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  Đổi mật khẩu
+                </button>
+              )}
             </div>
           </div>
 
-          <div className="profile-card">
-            <div className="detail-row">
-              <span>Email</span>
-              <span className="detail-value">{profileEmail}</span>
-            </div>
-            <div className="detail-row">
-              <span>Số điện thoại</span>
-              <span className="detail-value">{profilePhone}</span>
-            </div>
-            <div className="detail-row">
-              <span>Trạng thái</span>
-              <span className="detail-value">{profileStatus}</span>
-            </div>
-            {id && resident?.apartment_id && (
-              <div className="search-field status-select-card">
-                <label htmlFor="apartment-status">Cập nhật trạng thái căn hộ</label>
-                <select
-                  id="apartment-status"
-                  value={apartmentStatus}
-                  onChange={(event) => setApartmentStatus(event.target.value)}
-                >
-                  {apartmentStatusOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+          {loadError && (
+            <div className="profile-error">{loadError}</div>
+          )}
+
+          <div className="profile-body">
+            <div className="profile-section">
+              <div className="profile-section-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span>Thông tin cá nhân</span>
               </div>
-            )}
-            <div className="detail-row">
-              <span>Loại tài khoản</span>
-              <span className="detail-value">{profile?.role === 'admin' ? 'Quản trị viên' : 'Cư dân'}</span>
+              <div className="profile-info-grid">
+                <div className="profile-info-item">
+                  <span className="profile-info-label">Số căn cước</span>
+                  <span className="profile-info-value">{displayIdCard}</span>
+                </div>
+                <div className="profile-info-item">
+                  <span className="profile-info-label">Tên đăng nhập</span>
+                  <span className="profile-info-value">{displayUsername}</span>
+                </div>
+                <div className="profile-info-item">
+                  <span className="profile-info-label">Email</span>
+                  <span className="profile-info-value">{displayEmail}</span>
+                </div>
+                <div className="profile-info-item">
+                  <span className="profile-info-label">Số điện thoại</span>
+                  <span className="profile-info-value">{displayPhone}</span>
+                </div>
+                <div className="profile-info-item">
+                  <span className="profile-info-label">Loại tài khoản</span>
+                  <span className="profile-info-value">{accountType}</span>
+                </div>
+                <div className="profile-info-item">
+                  <span className="profile-info-label">Trạng thái</span>
+                  <span className="profile-info-value">
+                    <span className="profile-dot" style={{ background: statusColor }} />
+                    {displayStatus}
+                  </span>
+                </div>
+              </div>
             </div>
 
-            {!id && (
-              <div className="page-actions" style={{ marginTop: "18px", justifyContent: "flex-start" }}>
-                <button
-                  type="button"
-                  className="primary-btn"
-                  onClick={handleOpenChangePassword}
-                >
-                  Đổi mật khẩu
+            {id && (
+              <div className="profile-section profile-section-actions">
+                <Link to={`/admin/residents/edit/${resident.id}`} className="profile-btn profile-btn-primary">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Chỉnh sửa
+                </Link>
+                <button type="button" className="profile-btn profile-btn-danger" onClick={handleDelete}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  Xóa cư dân
                 </button>
               </div>
             )}
 
-            {id && resident && (
-              <>
-                <div className="status-update-row">
-                  <button
-                    type="button"
-                    className="primary-btn"
-                    disabled={statusSaving || !resident?.apartment_id}
-                    onClick={async () => {
-                      if (!resident?.apartment_id) return;
-                      setStatusSaving(true);
-                      setStatusMessage("");
-                      try {
-                        await updateApartment(resident.apartment_id, { status: apartmentStatus });
-                        setStatusMessage("Cập nhật trạng thái căn hộ thành công.");
-                        setResident((prev) => prev ? { ...prev, apartment_status: apartmentStatus } : prev);
-                      } catch (err) {
-                        const apiMessage = err?.response?.data?.message || err?.message || "Lỗi khi cập nhật trạng thái";
-                        setStatusMessage(apiMessage);
-                      } finally {
-                        setStatusSaving(false);
-                      }
-                    }}
-                  >
-                    {statusSaving ? "Đang cập nhật..." : "Lưu trạng thái"}
-                  </button>
-                  {statusMessage && <p className="success-message">{statusMessage}</p>}
+            {id && resident?.apartment_id && (
+              <div className="profile-section">
+                <div className="profile-section-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  <span>Hóa đơn căn hộ</span>
                 </div>
-                <div className="page-actions" style={{ marginTop: "18px", justifyContent: "flex-start" }}>
-                  <Link to={`/admin/residents/edit/${resident.id}`} className="primary-btn">
-                    Chỉnh sửa
-                  </Link>
-                  <button
-                    type="button"
-                    className="secondary-btn"
-                    onClick={openFeeNotification}
-                  >
-                    Thông báo phí căn hộ
-                  </button>
-                  <button
-                    type="button"
-                    className="secondary-btn"
-                    style={{ backgroundColor: "#e74c3c", borderColor: "#e74c3c", color: "#fff" }}
-                    onClick={handleDelete}
-                  >
-                    Xóa
-                  </button>
+                <div className="table-responsive" style={{ marginTop: "12px" }}>
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Mã hóa đơn</th>
+                        <th>Nội dung</th>
+                        <th>Hạn nộp</th>
+                        <th>Số tiền</th>
+                        <th>Trạng thái</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {loadingFees ? (
+                        <tr><td colSpan="5" style={{ textAlign: "center", padding: "20px" }}>Đang tải...</td></tr>
+                      ) : fees.length === 0 ? (
+                        <tr><td colSpan="5" style={{ textAlign: "center", padding: "20px" }}>Chưa có hóa đơn nào.</td></tr>
+                      ) : (
+                        fees.map((fee) => {
+                          const status = getFeeStatus(fee.id);
+                          let statusLabel = "Chưa thanh toán";
+                          let statusClass = "status-pending";
+                          if (status === "paid") { statusLabel = "Đã thanh toán"; statusClass = "status-paid"; }
+                          else if (status === "pending") { statusLabel = "Chờ xác nhận"; statusClass = "status-pending"; }
+                          return (
+                            <tr key={fee.id}>
+                              <td>{fee.fee_code || fee.id}</td>
+                              <td>{fee.name}</td>
+                              <td>{fee.due_date ? new Date(fee.due_date).toLocaleDateString("vi-VN") : "N/A"}</td>
+                              <td>{Number(fee.amount || 0).toLocaleString("vi-VN")}đ</td>
+                              <td><span className={`status-pill ${statusClass}`}>{statusLabel}</span></td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
                 </div>
-              </>
+              </div>
             )}
           </div>
-        </div>
 
-        <Modal
-          isOpen={isNotifyModalOpen}
-          title={`Thông báo phí cho ${profileName}`}
-          onClose={() => setIsNotifyModalOpen(false)}
-          onConfirm={handleSendFeeNotification}
-          confirmText="Gửi thông báo"
-          cancelText="Hủy"
-        >
-          <div className="search-field">
-            <label>Loại phí</label>
-            <select
-              value={selectedFeeId}
-              onChange={(event) => setSelectedFeeId(event.target.value)}
-            >
-              {serviceFees.map((fee) => (
-                <option key={fee.id} value={fee.id}>
-                  {fee.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="search-field">
-            <label>Số tiền</label>
-            <input type="text" value={formatMoney(baseAmount)} disabled />
-          </div>
-          <div className="search-field">
-            <label>Phí phát sinh</label>
-            <input
-              type="number"
-              min="0"
-              value={additionalFee}
-              onChange={(event) => setAdditionalFee(event.target.value)}
-              placeholder="Nhập phí phát sinh"
-            />
-          </div>
-          <div className="search-field">
-            <label>Tổng</label>
-            <input type="text" value={formatMoney(totalAmount)} disabled />
-          </div>
-        </Modal>
-
-        <Modal
-          isOpen={isChangePasswordOpen}
-          title="Đổi mật khẩu"
-          onClose={() => setIsChangePasswordOpen(false)}
-          onConfirm={handleChangePassword}
-          confirmText="Lưu mật khẩu"
-          cancelText="Hủy"
-        >
-          <div className="search-field">
-            <label>Mật khẩu cũ</label>
-            <input
-              type="password"
-              value={oldPassword}
-              onChange={(event) => setOldPassword(event.target.value)}
-            />
-          </div>
-          <div className="search-field">
-            <label>Mật khẩu mới</label>
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(event) => setNewPassword(event.target.value)}
-            />
-          </div>
-          <div className="search-field">
-            <label>Xác nhận mật khẩu mới</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-            />
-          </div>
-          {passwordError && <p className="error-message">{passwordError}</p>}
-        </Modal>
-      </section>
-    );
-  }
+          <Modal isOpen={isChangePasswordOpen} title="Đổi mật khẩu" onClose={() => setIsChangePasswordOpen(false)} onConfirm={handleChangePassword} confirmText="Lưu mật khẩu" cancelText="Hủy">
+            <div className="form-group"><label>Mật khẩu cũ</label><input type="password" value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} /></div>
+            <div className="form-group"><label>Mật khẩu mới</label><input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} /></div>
+            <div className="form-group"><label>Xác nhận mật khẩu mới</label><input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} /></div>
+            {passwordError && <p className="error-message" style={{ color: "#dc2626", fontSize: "0.85rem" }}>{passwordError}</p>}
+          </Modal>
+        </>
+      )}
+    </section>
+  );
+}

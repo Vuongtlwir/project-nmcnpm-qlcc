@@ -16,7 +16,7 @@ export default function AddResident() {
   const [relation, setRelation] = useState("tenant");
   const [moveInDate, setMoveInDate] = useState("");
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -39,11 +39,14 @@ export default function AddResident() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
+    setSuccess(null);
 
-    if (!name.trim() || !apartmentId || !dateOfBirth || !nationalId.trim() || !phone.trim() || !email.trim() || !moveInDate) {
+    if (!name.trim() || !apartmentId || !dateOfBirth || !nationalId.trim() || !email.trim() || !moveInDate) {
       setError("Vui lòng nhập đầy đủ thông tin cư dân.");
       return;
     }
+
+    const cleanPhone = phone.trim().replace(/\D/g, "");
 
     const payload = {
       full_name: name.trim(),
@@ -51,21 +54,16 @@ export default function AddResident() {
       date_of_birth: dateOfBirth,
       gender,
       id_card: nationalId.trim(),
-      phone: phone.trim(),
+      phone: cleanPhone || null,
       email: email.trim(),
       relation,
-      move_in_date: moveInDate
+      move_in_date: moveInDate,
     };
 
     try {
       setLoading(true);
       const created = await createResident(payload);
-      let message = "Thêm cư dân thành công.";
-      if (created?.user_credentials) {
-        message += `\nTài khoản:\nUsername: ${created.user_credentials.username}\nPassword: ${created.user_credentials.password}`;
-      }
-      window.alert(message);
-      navigate("/admin/residents");
+      setSuccess({ ...created, passwordSent: true });
     } catch (err) {
       const apiMessage = err?.response?.data?.message || err?.message || "Lỗi khi thêm cư dân";
       setError(apiMessage);
@@ -77,141 +75,144 @@ export default function AddResident() {
   return (
     <section className="page-card">
       <div className="page-card-header">
-        <h2>Thêm cư dân mới</h2>
-        <p>Nhập đầy đủ thông tin cư dân và chọn căn hộ có sẵn trong hệ thống để quản lý hiệu quả.</p>
+        <div className="page-card-header-text">
+          <h2>Thêm cư dân mới</h2>
+          <p>Nhập đầy đủ thông tin cư dân và chọn căn hộ có sẵn trong hệ thống.</p>
+        </div>
       </div>
 
-      <div className="highlight-card">
-        <p>Form này sẽ tự động tạo tài khoản cư dân khi bạn lưu. Hệ thống sẽ dùng số CMND/CCCD làm tên đăng nhập.</p>
-      </div>
-
-      <form onSubmit={handleSubmit} style={{ marginTop: "24px" }}>
-        <div className="form-grid">
-          <div className="form-card">
-            <h3>Thông tin cá nhân</h3>
-            <div className="search-field">
-              <label htmlFor="name">Họ và tên</label>
-              <input
-                id="name"
-                type="text"
-                placeholder="Nguyễn Văn A"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-              />
+      {success ? (
+        <div style={{ marginTop: 24 }}>
+          <div style={{ padding: "20px 24px", background: "#ecfdf5", border: "1px solid #d1fae5", borderRadius: 14, marginBottom: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+              <h3 style={{ margin: 0, color: "#166534", fontSize: "1.05rem" }}>Thêm cư dân thành công!</h3>
             </div>
-            <div className="search-field">
-              <label htmlFor="dateOfBirth">Ngày sinh</label>
-              <input
-                id="dateOfBirth"
-                type="date"
-                value={dateOfBirth}
-                onChange={(event) => setDateOfBirth(event.target.value)}
-              />
-            </div>
-            <div className="search-field">
-              <label htmlFor="gender">Giới tính</label>
-              <select
-                id="gender"
-                value={gender}
-                onChange={(event) => setGender(event.target.value)}
-              >
-                <option value="male">Nam</option>
-                <option value="female">Nữ</option>
-                <option value="other">Khác</option>
-              </select>
-            </div>
-            <div className="search-field">
-              <label htmlFor="nationalId">Số CMND/CCCD</label>
-              <input
-                id="nationalId"
-                type="text"
-                placeholder="012345678901"
-                value={nationalId}
-                onChange={(event) => setNationalId(event.target.value)}
-              />
-            </div>
+            <p style={{ margin: 0, color: "#15803d", fontSize: "0.9rem", lineHeight: 1.6 }}>
+              Cư dân <strong>{success.full_name}</strong> đã được thêm vào căn hộ.
+              {success.passwordSent && " Thông tin đăng nhập đã được gửi đến email của cư dân."}
+            </p>
           </div>
 
-          <div className="form-card">
-            <h3>Thông tin liên hệ & căn hộ</h3>
-            <div className="search-field">
-              <label htmlFor="phone">Số điện thoại</label>
-              <input
-                id="phone"
-                type="text"
-                placeholder="0905123456"
-                value={phone}
-                onChange={(event) => setPhone(event.target.value)}
-              />
+          {success.user_credentials && (
+            <div style={{ padding: "20px 24px", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 14, marginBottom: 20 }}>
+              <h4 style={{ margin: "0 0 10px", color: "#92400e", fontSize: "0.95rem" }}>Thông tin tài khoản</h4>
+              <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: "8px 16px", fontSize: "0.88rem" }}>
+                <span style={{ color: "#92400e", fontWeight: 600 }}>Tên đăng nhập:</span>
+                <span style={{ color: "#0f172a", fontWeight: 700, fontFamily: "monospace", fontSize: "1rem" }}>{success.user_credentials.username}</span>
+                <span style={{ color: "#92400e", fontWeight: 600 }}>Mật khẩu:</span>
+                <span style={{ color: "#0f172a", fontWeight: 700, fontFamily: "monospace", fontSize: "1rem" }}>{success.user_credentials.password}</span>
+              </div>
+              <p style={{ margin: "12px 0 0", fontSize: "0.82rem", color: "#92400e" }}>
+                Cư dân có thể đăng nhập bằng tên đăng nhập và email đã đăng ký.
+              </p>
             </div>
-            <div className="search-field">
-              <label htmlFor="email">Email</label>
-              <input
-                id="email"
-                type="email"
-                placeholder="a@example.com"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-              />
-            </div>
-            <div className="search-field">
-              <label htmlFor="apartment">Chọn căn hộ (chỉ căn hộ trống)</label>
-              {apartments.length > 0 ? (
-                <select
-                  id="apartment"
-                  value={apartmentId}
-                  onChange={(event) => setApartmentId(event.target.value)}
-                >
-                  {apartments.map((apartment) => (
-                    <option key={apartment.id} value={apartment.id}>
-                      {apartment.code} - {apartment.building} ({apartment.area ? `${apartment.area} m²` : "N/A"})
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <div className="section-note">
-                  Hiện không có căn hộ trống để thêm cư dân. Vui lòng tạo hoặc cập nhật trạng thái căn hộ trước khi tiếp tục.
+          )}
+
+          <div className="page-actions" style={{ justifyContent: "flex-end" }}>
+            <button type="button" className="primary-btn" onClick={() => navigate("/admin/residents")}>
+              Quay lại danh sách
+            </button>
+          </div>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} style={{ marginTop: "20px" }}>
+          <div className="form-row">
+            <div className="page-card" style={{ padding: "24px" }}>
+              <h3 style={{ margin: "0 0 18px", fontSize: "1rem", fontWeight: 700, color: "#0f172a" }}>Thông tin cá nhân</h3>
+              <div className="form-group">
+                <label htmlFor="name">Họ và tên</label>
+                <input id="name" type="text" placeholder="Nguyễn Văn A" value={name} onChange={(e) => setName(e.target.value)} />
+              </div>
+              <div className="form-row" style={{ gap: 12 }}>
+                <div className="form-group">
+                  <label htmlFor="dateOfBirth">Ngày sinh</label>
+                  <input id="dateOfBirth" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} />
                 </div>
-              )}
+                <div className="form-group">
+                  <label htmlFor="gender">Giới tính</label>
+                  <select id="gender" value={gender} onChange={(e) => setGender(e.target.value)}>
+                    <option value="male">Nam</option>
+                    <option value="female">Nữ</option>
+                    <option value="other">Khác</option>
+                  </select>
+                </div>
+              </div>
+              <div className="form-group">
+                <label htmlFor="nationalId">Số CMND/CCCD</label>
+                <input id="nationalId" type="text" placeholder="012345678901" value={nationalId} onChange={(e) => setNationalId(e.target.value)} />
+                <small style={{ color: "#64748b", fontSize: "0.78rem", marginTop: 4, display: "block" }}>
+                  Số CMND/CCCD sẽ được dùng làm tên đăng nhập cho cư dân.
+                </small>
+              </div>
             </div>
-            <div className="search-field">
-              <label htmlFor="relation">Mối quan hệ</label>
-              <select
-                id="relation"
-                value={relation}
-                onChange={(event) => setRelation(event.target.value)}
-              >
-                <option value="owner">Chủ sở hữu</option>
-                <option value="tenant">Người thuê</option>
-              </select>
-            </div>
-            <div className="search-field">
-              <label htmlFor="moveInDate">Ngày chuyển vào</label>
-              <input
-                id="moveInDate"
-                type="date"
-                value={moveInDate}
-                onChange={(event) => setMoveInDate(event.target.value)}
-              />
+
+            <div className="page-card" style={{ padding: "24px" }}>
+              <h3 style={{ margin: "0 0 18px", fontSize: "1rem", fontWeight: 700, color: "#0f172a" }}>Thông tin liên hệ & căn hộ</h3>
+              <div className="form-row" style={{ gap: 12 }}>
+                <div className="form-group">
+                  <label htmlFor="phone">Số điện thoại</label>
+                  <input id="phone" type="text" placeholder="0905123456" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="email">Email</label>
+                  <input id="email" type="email" placeholder="a@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+                </div>
+              </div>
+              <div className="form-group">
+                <label htmlFor="apartment">Chọn căn hộ</label>
+                {apartments.length > 0 ? (
+                  <select id="apartment" value={apartmentId} onChange={(e) => setApartmentId(e.target.value)}>
+                    {apartments.map((apartment) => (
+                      <option key={apartment.id} value={apartment.id}>
+                        {apartment.code} - {apartment.building} ({apartment.area ? `${apartment.area} m²` : "N/A"})
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div style={{ padding: "12px 14px", background: "#fef3c7", borderRadius: 9, fontSize: "0.85rem", color: "#92400e" }}>
+                    Hiện không có căn hộ trống. Vui lòng tạo hoặc cập nhật trạng thái căn hộ trước.
+                  </div>
+                )}
+              </div>
+              <div className="form-row" style={{ gap: 12 }}>
+                <div className="form-group">
+                  <label htmlFor="relation">Mối quan hệ</label>
+                  <select id="relation" value={relation} onChange={(e) => setRelation(e.target.value)}>
+                    <option value="owner">Chủ sở hữu</option>
+                    <option value="tenant">Người thuê</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="moveInDate">Ngày chuyển vào</label>
+                  <input id="moveInDate" type="date" value={moveInDate} onChange={(e) => setMoveInDate(e.target.value)} />
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        {error && <p className="error-message">{error}</p>}
-        {successMessage && <p className="success-message">{successMessage}</p>}
+          {error && (
+            <div style={{ padding: "14px 18px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, color: "#991b1b", fontSize: "0.88rem", marginTop: 16, display: "flex", alignItems: "center", gap: 8 }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+              </svg>
+              {error}
+            </div>
+          )}
 
-        <div className="page-actions" style={{ justifyContent: "space-between", gap: "16px" }}>
-          <button type="button" className="secondary-btn" onClick={() => navigate("/admin/residents")}>Hủy</button>
-          <button
-            type="button"
-            className="primary-btn"
-            onClick={handleSubmit}
-            disabled={loading || apartments.length === 0}
-          >
-            {loading ? "Đang lưu..." : "Lưu cư dân"}
-          </button>
-        </div>
-      </form>
+          <div className="page-actions" style={{ justifyContent: "flex-end", marginTop: 20 }}>
+            <button type="button" className="secondary-btn" onClick={() => navigate("/admin/residents")}>Hủy</button>
+            <button type="submit" className="primary-btn" disabled={loading || apartments.length === 0}>
+              {loading ? "Đang lưu..." : "Lưu cư dân"}
+            </button>
+          </div>
+        </form>
+      )}
     </section>
   );
 }

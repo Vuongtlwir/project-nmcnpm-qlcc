@@ -1,21 +1,15 @@
-﻿import { useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { payFee } from "../../services/feeService";
-
-const initialInvoices = [
-  { id: "HD-001", description: "Phí vệ sinh tháng 6", dueDate: "10/06/2026", amount: "1.250.000đ", status: "Chưa thanh toán" },
-  { id: "HD-002", description: "Tiền điện tháng 5", dueDate: "05/06/2026", amount: "850.000đ", status: "Đã thanh toán" },
-  { id: "HD-003", description: "Tiền nước tháng 5", dueDate: "12/06/2026", amount: "420.000đ", status: "Chưa thanh toán" },
-  { id: "HD-004", description: "Phí internet", dueDate: "15/06/2026", amount: "250.000đ", status: "Quá hạn" },
-];
+import { getFees, getPaymentHistory, payFee } from "../../services/feeService";
 
 const formatCardNumber = (value) =>
   value.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim();
 
 export default function Payment() {
   const location = useLocation();
-  const [invoices, setInvoices] = useState(initialInvoices);
-  const [selectedInvoice, setSelectedInvoice] = useState(location.state?.invoice || null);
+  const [fees, setFees] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [selectedFee, setSelectedFee] = useState(location.state?.fee || null);
   const [cardHolder, setCardHolder] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [expiry, setExpiry] = useState("");
@@ -24,10 +18,26 @@ export default function Payment() {
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const availableInvoices = invoices.filter((item) => item.status !== "Đã thanh toán");
+  useEffect(() => {
+    loadFees();
+  }, []);
+
+  const loadFees = async () => {
+    const [feeData, paymentData] = await Promise.all([
+      getFees(),
+      getPaymentHistory(),
+    ]);
+    setFees(feeData || []);
+    setPayments(paymentData || []);
+  };
+
+  const availableFees = fees.filter((fee) => {
+    const payment = payments.find((p) => p.fee_id === fee.id);
+    return !payment || payment.status !== "paid";
+  });
 
   const validateForm = () => {
-    if (!selectedInvoice) {
+    if (!selectedFee) {
       setErrorMessage("Vui lòng chọn một hóa đơn để thanh toán.");
       return false;
     }
@@ -54,34 +64,25 @@ export default function Payment() {
 
   const handlePaymentSubmit = async (event) => {
     event.preventDefault();
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsSubmitting(true);
     try {
-      const paymentData = {
-        cardHolder,
-        cardNumber: cardNumber.replace(/\s/g, ""),
-        expiry,
-        cvc,
-      };
+      await payFee(selectedFee.id, { method: "card" });
 
-      await payFee(selectedInvoice.id, paymentData);
-
-      setInvoices((prev) =>
-        prev.map((item) =>
-          item.id === selectedInvoice.id ? { ...item, status: "Đã thanh toán" } : item
-        )
+      setSuccessMessage(
+        `Yêu cầu thanh toán ${selectedFee.fee_code || selectedFee.id} đã được gửi. Vui lòng chờ quản trị viên xác nhận.`
       );
-      setSuccessMessage(`Thanh toán ${selectedInvoice.id} thành công. Cảm ơn bạn đã sử dụng dịch vụ.`);
-      setSelectedInvoice(null);
+      setSelectedFee(null);
       setCardHolder("");
       setCardNumber("");
       setExpiry("");
       setCvc("");
+      loadFees();
     } catch (error) {
-      setErrorMessage("Thanh toán thất bại. Vui lòng thử lại sau.");
+      setErrorMessage(
+        error?.response?.data?.message || "Thanh toán thất bại. Vui lòng thử lại sau."
+      );
       console.error("Lỗi thanh toán hóa đơn:", error);
     } finally {
       setIsSubmitting(false);
@@ -107,7 +108,7 @@ export default function Payment() {
         </div>
       )}
 
-      {selectedInvoice && (
+      {selectedFee && (
         <form onSubmit={handlePaymentSubmit}>
           <div className="page-card" style={{ marginBottom: "24px", padding: "26px" }}>
             <h3>Thông tin thẻ</h3>
@@ -174,13 +175,19 @@ export default function Payment() {
           <label>Hóa đơn đang chọn</label>
           <div style={{ padding: "18px", borderRadius: "18px", background: "#f8fafc", border: "1px solid #e5e7eb" }}>
             <p style={{ margin: 0, fontWeight: 600 }}>
-              {selectedInvoice ? `${selectedInvoice.id} - ${selectedInvoice.description}` : "Chưa có hóa đơn được chọn"}
+              {selectedFee
+                ? `${selectedFee.fee_code || selectedFee.id} - ${selectedFee.name}`
+                : "Chưa có hóa đơn được chọn"}
             </p>
             <p style={{ color: "#6b7280", margin: "8px 0 0" }}>
-              {selectedInvoice ? `Số tiền: ${selectedInvoice.amount}` : "Vui lòng chọn hóa đơn ở danh sách phía dưới."}
+              {selectedFee
+                ? `Số tiền: ${Number(selectedFee.amount || 0).toLocaleString("vi-VN")}đ`
+                : "Vui lòng chọn hóa đơn ở danh sách phía dưới."}
             </p>
             <p style={{ color: "#6b7280", margin: "4px 0 0" }}>
-              {selectedInvoice ? `Hạn nộp: ${selectedInvoice.dueDate}` : ""}
+              {selectedFee
+                ? `Hạn nộp: ${new Date(selectedFee.due_date).toLocaleDateString("vi-VN")}`
+                : ""}
             </p>
           </div>
         </div>
@@ -195,33 +202,35 @@ export default function Payment() {
                   <th>Nội dung</th>
                   <th>Hạn nộp</th>
                   <th>Số tiền</th>
-                  <th>Trạng thái</th>
                   <th>Chọn</th>
                 </tr>
               </thead>
               <tbody>
-                {availableInvoices.map((invoice) => (
-                  <tr key={invoice.id}>
-                    <td>{invoice.id}</td>
-                    <td>{invoice.description}</td>
-                    <td>{invoice.dueDate}</td>
-                    <td>{invoice.amount}</td>
-                    <td>
-                      <span className={`status-pill ${invoice.status === "Chưa thanh toán" ? "status-pending" : "status-overdue"}`}>
-                        {invoice.status}
-                      </span>
-                    </td>
-                    <td>
-                      <button
-                        type="button"
-                        className="secondary-btn"
-                        onClick={() => setSelectedInvoice(invoice)}
-                      >
-                        Chọn
-                      </button>
+                {availableFees.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" style={{ textAlign: "center", padding: "20px" }}>
+                      Không có hóa đơn nào cần thanh toán.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  availableFees.map((fee) => (
+                    <tr key={fee.id}>
+                      <td>{fee.fee_code || fee.id}</td>
+                      <td>{fee.name}</td>
+                      <td>{new Date(fee.due_date).toLocaleDateString("vi-VN")}</td>
+                      <td>{Number(fee.amount || 0).toLocaleString("vi-VN")}đ</td>
+                      <td>
+                        <button
+                          type="button"
+                          className="secondary-btn"
+                          onClick={() => setSelectedFee(fee)}
+                        >
+                          Chọn
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

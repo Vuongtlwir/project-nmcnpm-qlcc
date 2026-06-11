@@ -14,3 +14,8 @@ export const updateComplaint = async (id, updateData) => {
   const response = await api.put(`/complaints/${id}`, updateData);
   return response.data;
 };
+
+export const getComplaintById = async (id) => {
+  const response = await api.get(`/complaints/${id}`);
+  return response.data?.data;
+};

@@ -20,12 +20,22 @@ export async function getStatisticsOverview() {
   }
 }
 
-export async function getUsageTrends() {
+export async function getApartmentStatus() {
   try {
-    const response = await api.get("/statistics/trends");
+    const response = await api.get("/statistics/apartment-status");
+    return response.data?.data || { occupied: 0, empty: 0, maintenance: 0 };
+  } catch (error) {
+    console.error("Lỗi lấy trạng thái căn hộ:", error);
+    return { occupied: 0, empty: 0, maintenance: 0 };
+  }
+}
+
+export async function getRevenueByMonth() {
+  try {
+    const response = await api.get("/statistics/revenue");
     return response.data?.data || [];
   } catch (error) {
-    console.error("Lỗi lấy xu hướng thống kê:", error);
+    console.error("Lỗi lấy doanh thu:", error);
     return [];
   }
 }

@@ -1,36 +1,51 @@
-﻿import { Link } from "react-router-dom";
-import { useMemo, useState } from "react";
+﻿import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { getFees, getPaymentHistory } from "../../services/feeService";
+
+const STATUS_MAP = {
+  paid: { label: "Đã thanh toán", className: "status-paid" },
+  pending: { label: "Chờ xác nhận", className: "status-pending" },
+  cancelled: { label: "Đã hủy", className: "status-overdue" },
+};
 
 export default function FeeList() {
   const [search, setSearch] = useState("");
+  const [fees, setFees] = useState([]);
+  const [payments, setPayments] = useState([]);
 
-  const invoices = [
-    { id: "HD-001", description: "Phí vệ sinh tháng 6", dueDate: "10/06/2026", amount: "1.250.000đ", status: "Chưa thanh toán" },
-    { id: "HD-002", description: "Tiền điện tháng 5", dueDate: "05/06/2026", amount: "850.000đ", status: "Đã thanh toán" },
-    { id: "HD-003", description: "Tiền nước tháng 5", dueDate: "12/06/2026", amount: "420.000đ", status: "Chưa thanh toán" },
-    { id: "HD-004", description: "Phí internet", dueDate: "15/06/2026", amount: "250.000đ", status: "Quá hạn" },
-  ];
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  const filteredInvoices = useMemo(
-    () => invoices.filter((item) => {
-      const keyword = search.toLowerCase();
-      return item.id.toLowerCase().includes(keyword) || item.description.toLowerCase().includes(keyword);
-    }),
-    [search]
-  );
-
-  const paidCount = invoices.filter((item) => item.status === "Đã thanh toán").length;
-  const unpaidCount = invoices.filter((item) => item.status === "Chưa thanh toán").length;
-  const overdueCount = invoices.filter((item) => item.status === "Quá hạn").length;
-  const totalCount = invoices.length;
-  const paidPercent = totalCount ? Math.round((paidCount / totalCount) * 100) : 0;
-  const unpaidPercent = totalCount ? Math.round(((unpaidCount + overdueCount) / totalCount) * 100) : 0;
-
-  const getStatusClass = (status) => {
-    if (status === "Đã thanh toán") return "status-paid";
-    if (status === "Chưa thanh toán") return "status-pending";
-    return "status-overdue";
+  const loadData = async () => {
+    const [feeData, paymentData] = await Promise.all([
+      getFees(),
+      getPaymentHistory(),
+    ]);
+    setFees(feeData || []);
+    setPayments(paymentData || []);
   };
+
+  const getFeeStatus = (feeId) => {
+    const payment = payments.find((p) => p.fee_id === feeId);
+    return payment ? payment.status : null;
+  };
+
+  const filteredFees = fees.filter((fee) => {
+    if (!search) return true;
+    const keyword = search.toLowerCase();
+    return (
+      (fee.fee_code || "").toLowerCase().includes(keyword) ||
+      (fee.name || "").toLowerCase().includes(keyword)
+    );
+  });
+
+  const totalCount = filteredFees.length;
+  const paidCount = filteredFees.filter((f) => getFeeStatus(f.id) === "paid").length;
+  const pendingCount = filteredFees.filter((f) => getFeeStatus(f.id) === "pending").length;
+  const unpaidCount = filteredFees.filter((f) => !getFeeStatus(f.id)).length;
+  const paidPercent = totalCount ? Math.round((paidCount / totalCount) * 100) : 0;
+  const unpaidPercent = totalCount ? Math.round(((unpaidCount + pendingCount) / totalCount) * 100) : 0;
 
   return (
     <section className="page-card">
@@ -70,7 +85,7 @@ export default function FeeList() {
           </div>
           <div style={{ padding: "18px", borderRadius: "18px", background: "#fef3c7" }}>
             <h4>Chưa đóng</h4>
-            <p style={{ fontSize: "1.9rem", fontWeight: 700, margin: "10px 0 0" }}>{unpaidCount + overdueCount}</p>
+            <p style={{ fontSize: "1.9rem", fontWeight: 700, margin: "10px 0 0" }}>{unpaidCount + pendingCount}</p>
           </div>
         </div>
 
@@ -98,7 +113,7 @@ export default function FeeList() {
                 <div style={{ width: `${unpaidPercent}%`, height: "100%", background: "#b45309" }} />
               </div>
               <p style={{ marginTop: "12px", color: "#4b5563" }}>
-                {unpaidCount + overdueCount} hóa đơn chưa đóng
+                {unpaidCount + pendingCount} hóa đơn chưa đóng
               </p>
             </div>
           </div>
@@ -118,32 +133,44 @@ export default function FeeList() {
             </tr>
           </thead>
           <tbody>
-            {filteredInvoices.map((invoice) => (
-              <tr key={invoice.id}>
-                <td>{invoice.id}</td>
-                <td>{invoice.description}</td>
-                <td>{invoice.dueDate}</td>
-                <td>{invoice.amount}</td>
-                <td>
-                  <span className={`status-pill ${getStatusClass(invoice.status)}`}>
-                    {invoice.status}
-                  </span>
-                </td>
-                <td>
-                  {invoice.status !== "Đã thanh toán" ? (
-                    <Link
-                      to="/payments"
-                      state={{ invoice }}
-                      className="secondary-btn"
-                    >
-                      Thanh toán
-                    </Link>
-                  ) : (
-                    <span className="status-pill status-paid">Đã thanh toán</span>
-                  )}
+            {filteredFees.length === 0 ? (
+              <tr>
+                <td colSpan="6" style={{ textAlign: "center", padding: "20px" }}>
+                  Không có hóa đơn nào.
                 </td>
               </tr>
-            ))}
+            ) : (
+              filteredFees.map((fee) => {
+                const status = getFeeStatus(fee.id);
+                const statusInfo = STATUS_MAP[status] || { label: "Chưa thanh toán", className: "status-pending" };
+                return (
+                  <tr key={fee.id}>
+                    <td>{fee.fee_code || fee.id}</td>
+                    <td>{fee.name}</td>
+                    <td>{fee.due_date ? new Date(fee.due_date).toLocaleDateString("vi-VN") : "N/A"}</td>
+                    <td>{Number(fee.amount || 0).toLocaleString("vi-VN")}đ</td>
+                    <td>
+                      <span className={`status-pill ${statusInfo.className}`}>
+                        {statusInfo.label}
+                      </span>
+                    </td>
+                    <td>
+                      {status !== "paid" ? (
+                        <Link
+                          to="/payments"
+                          state={{ fee }}
+                          className="secondary-btn"
+                        >
+                          {status === "pending" ? "Chờ xác nhận" : "Thanh toán"}
+                        </Link>
+                      ) : (
+                        <span className="status-pill status-paid">Đã thanh toán</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>

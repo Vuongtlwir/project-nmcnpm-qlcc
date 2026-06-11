@@ -79,8 +79,25 @@ const getFeeCollectionRate = async () => {
   };
 };
 
+const getApartmentStatus = async () => {
+  const [rows] = await db.query(`
+    SELECT status, COUNT(*) as count
+    FROM apartments
+    GROUP BY status
+  `);
+  const result = { occupied: 0, empty: 0, maintenance: 0, sold: 0 };
+  rows.forEach(row => {
+    if (row.status === 'occupied') result.occupied = row.count;
+    else if (row.status === 'empty') result.empty = row.count;
+    else if (row.status === 'maintenance') result.maintenance = row.count;
+    else if (row.status === 'sold') result.sold = row.count;
+  });
+  return result;
+};
+
 module.exports = {
   getOverview,
   getRevenueByMonth,
-  getFeeCollectionRate
+  getFeeCollectionRate,
+  getApartmentStatus
 };

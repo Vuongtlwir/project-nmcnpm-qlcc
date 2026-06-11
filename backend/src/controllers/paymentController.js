@@ -68,9 +68,22 @@ const updatePayment = async (req, res, next) => {
   }
 };
 
+const confirmPayment = async (req, res, next) => {
+  try {
+    const success = await paymentService.updatePayment(req.params.id, { status: 'paid' });
+    if (!success) {
+      return response.error(res, 'Xác nhận thanh toán thất bại', 'BAD_REQUEST', null, 400);
+    }
+    return response.success(res, 'Xác nhận thanh toán thành công');
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   getAllPayments,
   getPaymentById,
   createPayment,
-  updatePayment
+  updatePayment,
+  confirmPayment
 };

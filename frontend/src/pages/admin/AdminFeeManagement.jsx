@@ -1,95 +1,35 @@
 import { useEffect, useState } from "react";
-import { getFees, createFee } from "../../services/feeService";
-import { getApartments } from "../../services/apartmentService";
-import { getResidents } from "../../services/residentService";
+import { getFees, getPaymentHistory, confirmPayment } from "../../services/feeService";
 import api from "../../services/api";
 
-const initialBillForm = {
-  apartment_id: "",
-  amount: "",
-  due_date: "",
-  description: "",
-};
-
 export default function AdminFeeManagement() {
-  const [billForm, setBillForm] = useState(initialBillForm);
   const [bills, setBills] = useState([]);
-  const [apartments, setApartments] = useState([]);
-  const [residents, setResidents] = useState([]);
+  const [payments, setPayments] = useState([]);
 
   useEffect(() => {
-    loadBills();
-    loadApartmentsWithResidents();
+    loadData();
   }, []);
 
-  const loadBills = async () => {
+  const loadData = async () => {
     try {
-      const data = await getFees();
-      setBills(data || []);
-    } catch (err) {
-      console.error("Lỗi khi tải danh sách hóa đơn:", err);
-    }
-  };
-
-  const loadApartmentsWithResidents = async () => {
-    try {
-      const [apartmentsData, residentsData] = await Promise.all([
-        getApartments(),
-        getResidents()
+      const [feeData, paymentData] = await Promise.all([
+        getFees(),
+        getPaymentHistory(),
       ]);
-
-      // Map residents vào apartments
-      const enrichedApartments = apartmentsData
-        .filter(apt => apt.status !== "empty") // Chỉ lấy căn hộ không trống
-        .map(apt => {
-          const resident = residentsData.find(r => r.apartment_id === apt.id);
-          return {
-            ...apt,
-            resident_name: resident?.full_name || "Chưa có cư dân",
-            resident_id: resident?.id
-          };
-        });
-
-      setApartments(enrichedApartments);
-      setResidents(residentsData);
+      setBills(feeData || []);
+      setPayments(paymentData || []);
     } catch (err) {
-      console.error("Lỗi khi tải danh sách căn hộ:", err);
+      console.error("Lỗi khi tải dữ liệu:", err);
     }
   };
 
-  const handleBillFormChange = (field, value) => {
-    setBillForm((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const generateBillCode = () => {
-    const nextNumber = bills.length + 1;
-    return `HDV-${nextNumber.toString().padStart(3, "0")}`;
-  };
-
-  const handleCreateBill = async () => {
-    if (!billForm.apartment_id || !billForm.amount || !billForm.due_date) {
-      alert("Vui lòng điền đầy đủ các trường bắt buộc");
-      return;
-    }
-
-    const selectedApartment = apartments.find(apt => apt.id == billForm.apartment_id);
-    
+  const handleConfirmPayment = async (paymentId) => {
     try {
-      const result = await createFee({
-        name: `Hóa đơn dịch vụ tháng ${new Date().getMonth() + 1}/${new Date().getFullYear()}`,
-        type: 'mandatory',
-        amount: Number(billForm.amount),
-        description: billForm.description,
-        apartment_id: Number(billForm.apartment_id),
-        due_date: billForm.due_date,
-        status: 'active'
-      });
-
-      alert(`Tạo hóa đơn thành công. Mã: ${result.fee_code || result.id}`);
-      setBillForm(initialBillForm);
-      loadBills();
+      await confirmPayment(paymentId);
+      alert("Xác nhận thanh toán thành công");
+      loadData();
     } catch (err) {
-      alert("Tạo hóa đơn thất bại: " + (err.response?.data?.message || err.message));
+      alert("Xác nhận thất bại: " + (err.response?.data?.message || err.message));
     }
   };
 
@@ -107,14 +47,8 @@ export default function AdminFeeManagement() {
     }
   };
 
-  const getPaymentStatus = (bill) => {
-    return bill.status === "paid" ? "Đã thanh toán" : "Chưa thanh toán";
-  };
-
-  const getPaymentStatusColor = (bill) => {
-    return bill.status === "paid" ? "#10b981" : "#ef4444";
-  };
-
+  const pendingPayments = payments.filter((p) => p.status === "pending");
+  const paidPayments = payments.filter((p) => p.status === "paid");
   const formatDate = (date) => {
     if (!date) return "N/A";
     return new Date(date).toLocaleDateString("vi-VN");
@@ -124,135 +58,166 @@ export default function AdminFeeManagement() {
     <section className="page-card">
       <div className="page-card-header">
         <h2>Quản lý hóa đơn</h2>
-        <p>Tạo hóa đơn mới và theo dõi trạng thái thanh toán từ cư dân.</p>
+        <p>Theo dõi trạng thái thanh toán và xác nhận từ cư dân.</p>
       </div>
 
-      {/* Form tạo hóa đơn mới */}
-      <div className="page-card" style={{ marginTop: "24px" }}>
-        <div className="page-card-header">
-          <h3>Tạo hóa đơn mới</h3>
-        </div>
+      {pendingPayments.length > 0 && (
+        <div className="page-card" style={{ marginTop: "24px", border: "2px solid #f59e0b" }}>
+          <div className="page-card-header">
+            <h3>Chờ xác nhận thanh toán ({pendingPayments.length})</h3>
+          </div>
 
-        <div className="page-actions">
-          <div className="search-field" style={{ flex: 1 }}>
-            <label>Căn hộ / Cư dân</label>
-            <select
-              value={billForm.apartment_id}
-              onChange={(event) => handleBillFormChange("apartment_id", event.target.value)}
-            >
-              <option value="">-- Chọn căn hộ --</option>
-              {apartments.map((apt) => (
-                <option key={apt.id} value={apt.id}>
-                  {apt.code || apt.apartment_code || `Căn ${apt.id}`} - {apt.resident_name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="search-field" style={{ flex: 1 }}>
-            <label>Số tiền</label>
-            <input
-              type="number"
-              min="0"
-              value={billForm.amount}
-              onChange={(event) => handleBillFormChange("amount", event.target.value)}
-              placeholder="Nhập số tiền"
-            />
-          </div>
-          <div className="search-field" style={{ flex: 1 }}>
-            <label>Hạn thanh toán</label>
-            <input
-              type="date"
-              value={billForm.due_date}
-              onChange={(event) => handleBillFormChange("due_date", event.target.value)}
-            />
-          </div>
-          <div className="search-field" style={{ flex: 1 }}>
-            <label>Mô tả</label>
-            <input
-              value={billForm.description}
-              onChange={(event) => handleBillFormChange("description", event.target.value)}
-              placeholder="Mô tả hóa đơn (không bắt buộc)"
-            />
-          </div>
-          <div className="action-group">
-            <button className="primary-btn" onClick={handleCreateBill}>
-              Tạo hóa đơn
-            </button>
+          <div className="table-container">
+            <table className="custom-table">
+              <thead>
+                <tr>
+                  <th>Mã thanh toán</th>
+                  <th>Hóa đơn</th>
+                  <th>Cư dân</th>
+                  <th>Căn hộ</th>
+                  <th>Số tiền</th>
+                  <th>Ngày thanh toán</th>
+                  <th>Phương thức</th>
+                  <th>Hành động</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingPayments.map((payment) => (
+                  <tr key={payment.id}>
+                    <td><strong>{payment.payment_code}</strong></td>
+                    <td>{payment.fee_name || payment.fee_code || payment.fee_id}</td>
+                    <td>{payment.resident_name || "N/A"}</td>
+                    <td>{payment.apartment_code || "N/A"}</td>
+                    <td>{Number(payment.amount || 0).toLocaleString("vi-VN")}đ</td>
+                    <td>{formatDate(payment.payment_date)}</td>
+                    <td>{payment.method === "card" ? "Thẻ" : payment.method === "transfer" ? "Chuyển khoản" : "Tiền mặt"}</td>
+                    <td>
+                      <button
+                        className="primary-btn"
+                        onClick={() => handleConfirmPayment(payment.id)}
+                        style={{ fontSize: "12px", padding: "6px 12px" }}
+                      >
+                        Xác nhận
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Danh sách hóa đơn */}
       <div className="page-card" style={{ marginTop: "24px" }}>
         <div className="page-card-header">
           <h3>Danh sách hóa đơn</h3>
         </div>
 
-        <div className="table-responsive">
-          <table className="data-table">
+        <div className="table-container">
+          <table className="custom-table">
             <thead>
               <tr>
                 <th>Mã</th>
-                <th>Cư dân</th>
+                <th>Tên hóa đơn</th>
                 <th>Căn hộ</th>
                 <th>Số tiền</th>
-                <th>Trạng thái</th>
                 <th>Hạn thanh toán</th>
-                <th>Thời gian thanh toán</th>
+                <th>Trạng thái</th>
                 <th>Hành động</th>
               </tr>
             </thead>
             <tbody>
               {bills.length === 0 ? (
                 <tr>
-                  <td colSpan="8" style={{ textAlign: "center", padding: "20px" }}>
+                  <td colSpan="7" className="empty-row">
                     Chưa có hóa đơn nào.
                   </td>
                 </tr>
               ) : (
-                bills.map((bill) => (
-                  <tr key={bill.id}>
-                    <td>
-                      <strong>{bill.id}</strong>
-                    </td>
-                    <td>{bill.resident_name || bill.full_name || "N/A"}</td>
-                    <td>{bill.apartment_code || "N/A"}</td>
-                    <td>{Number(bill.amount || 0).toLocaleString("vi-VN")}đ</td>
-                    <td>
-                      <span
-                        style={{
-                          display: "inline-block",
-                          padding: "4px 12px",
-                          borderRadius: "20px",
-                          backgroundColor: getPaymentStatusColor(bill),
-                          color: "#fff",
-                          fontSize: "12px",
-                          fontWeight: "500",
-                        }}
-                      >
-                        {getPaymentStatus(bill)}
-                      </span>
-                    </td>
-                    <td>{formatDate(bill.due_date)}</td>
-                    <td>{bill.status === "paid" ? formatDate(bill.payment_date) : "-"}</td>
-                    <td>
-                      {bill.status !== "paid" && (
-                        <button
-                          className="secondary-btn"
-                          onClick={() => handleRemindResident(bill)}
-                          style={{ fontSize: "12px", padding: "6px 12px" }}
+                bills.map((bill) => {
+                  const relatedPayments = payments.filter((p) => p.fee_id === bill.id);
+                  const paidAmount = relatedPayments
+                    .filter((p) => p.status === "paid")
+                    .reduce((sum, p) => sum + Number(p.amount), 0);
+                  const isPaid = paidAmount >= Number(bill.amount);
+                  return (
+                    <tr key={bill.id}>
+                      <td><strong>{bill.fee_code || bill.id}</strong></td>
+                      <td>{bill.name}</td>
+                      <td>{bill.apartment_code || "Tất cả"}</td>
+                      <td>{Number(bill.amount || 0).toLocaleString("vi-VN")}đ</td>
+                      <td>{formatDate(bill.due_date)}</td>
+                      <td>
+                        <span
+                          style={{
+                            display: "inline-block",
+                            padding: "4px 12px",
+                            borderRadius: "20px",
+                            backgroundColor: isPaid ? "#10b981" : "#ef4444",
+                            color: "#fff",
+                            fontSize: "12px",
+                            fontWeight: "500",
+                          }}
                         >
-                          Nhắc nhở
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))
+                          {isPaid ? "Đã thanh toán" : "Chưa thanh toán"}
+                        </span>
+                      </td>
+                      <td>
+                        {!isPaid && (
+                          <button
+                            className="secondary-btn"
+                            onClick={() => handleRemindResident(bill)}
+                            style={{ fontSize: "12px", padding: "6px 12px" }}
+                          >
+                            Nhắc nhở
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
       </div>
+
+      {paidPayments.length > 0 && (
+        <div className="page-card" style={{ marginTop: "24px" }}>
+          <div className="page-card-header">
+            <h3>Lịch sử thanh toán ({paidPayments.length})</h3>
+          </div>
+
+          <div className="table-container">
+            <table className="custom-table">
+              <thead>
+                <tr>
+                  <th>Mã thanh toán</th>
+                  <th>Hóa đơn</th>
+                  <th>Cư dân</th>
+                  <th>Căn hộ</th>
+                  <th>Số tiền</th>
+                  <th>Ngày thanh toán</th>
+                  <th>Phương thức</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paidPayments.map((payment) => (
+                  <tr key={payment.id}>
+                    <td><strong>{payment.payment_code}</strong></td>
+                    <td>{payment.fee_name || payment.fee_code || payment.fee_id}</td>
+                    <td>{payment.resident_name || "N/A"}</td>
+                    <td>{payment.apartment_code || "N/A"}</td>
+                    <td>{Number(payment.amount || 0).toLocaleString("vi-VN")}đ</td>
+                    <td>{formatDate(payment.payment_date)}</td>
+                    <td>{payment.method === "card" ? "Thẻ" : payment.method === "transfer" ? "Chuyển khoản" : "Tiền mặt"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

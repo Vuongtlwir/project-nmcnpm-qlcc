@@ -1,9 +1,11 @@
 const feeRepository = require('../repositories/feeRepository');
 const apartmentRepository = require('../repositories/apartmentRepository');
+const residentRepository = require('../repositories/residentRepository');
+const paymentService = require('./paymentService');
 const codeGenerator = require('../utils/generateCode');
 
-const getFees = async ({ search = '' }) => {
-  return feeRepository.findAll({ search });
+const getFees = async ({ search = '', apartmentId = null }) => {
+  return feeRepository.findAll({ search, apartmentId });
 };
 
 const getFeeById = async (id) => {
@@ -68,10 +70,32 @@ const deleteFee = async (id) => {
   return feeRepository.deleteById(id);
 };
 
+const payFee = async ({ feeId, userId, method }) => {
+  const fee = await feeRepository.findById(feeId);
+  if (!fee) {
+    throw { status: 404, message: 'Khoản thu không tồn tại', code: 'NOT_FOUND' };
+  }
+
+  const resident = await residentRepository.findByUserId(userId);
+  if (!resident) {
+    throw { status: 400, message: 'Không tìm thấy thông tin cư dân', code: 'BAD_REQUEST' };
+  }
+
+  return paymentService.createPayment({
+    fee_id: feeId,
+    resident_id: resident.id,
+    amount: fee.amount,
+    payment_date: new Date().toISOString().split('T')[0],
+    method,
+    status: 'pending'
+  });
+};
+
 module.exports = {
   getFees,
   getFeeById,
   createFee,
   updateFee,
-  deleteFee
+  deleteFee,
+  payFee
 };

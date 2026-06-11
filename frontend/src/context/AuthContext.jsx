@@ -14,7 +14,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const init = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         if (token) {
           const res = await authService.getMe();
           // authService.getMe may return either the user object
@@ -24,7 +24,7 @@ export function AuthProvider({ children }) {
         }
       } catch (err) {
         console.error("Failed to load current user", err);
-        localStorage.removeItem("token");
+        sessionStorage.removeItem("token");
       }
     };
     init();
@@ -40,7 +40,7 @@ export function AuthProvider({ children }) {
       const userObj = payload?.user || payload?.data || payload;
 
       if (token) {
-        localStorage.setItem("token", token);
+        sessionStorage.setItem("token", token);
         setUser(userObj || null);
         return userObj;
       }
@@ -52,7 +52,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
     setUser(null);
   };
 

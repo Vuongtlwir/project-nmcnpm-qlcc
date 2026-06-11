@@ -18,7 +18,6 @@ import AddApartments from "./pages/apartments/AddApartments";
 import ApartmentDetail from "./pages/apartments/ApartmentDetail";
 import Dashboard from "./pages/dashboard/Dashboard";
 import AdminFeeManagement from "./pages/admin/AdminFeeManagement";
-import CreateFee from "./pages/fees/CreateFee";
 import AdminChat from "./pages/admin/AdminChat";
 import AdminRequestManagement from "./pages/admin/AdminRequestManagement";
 import NotificationList from "./pages/notifications/NotificationList";
@@ -60,7 +59,6 @@ function App() {
       <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
         <Route index element={<Dashboard />} />
         <Route path="bills" element={<AdminFeeManagement />} />
-        <Route path="bills/create" element={<CreateFee />} />
         <Route path="residents" element={<ResidentList />} />
         <Route path="residents/add" element={<AddResident />} />
         <Route path="residents/edit/:id" element={<EditResident />} />

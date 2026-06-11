@@ -1,9 +1,29 @@
-﻿export default function PaymentHistory() {
-  const paymentHistory = [
-    { id: "PT-2026-05-10", amount: "850.000đ", date: "10/05/2026", method: "Thẻ ngân hàng", status: "Thành công" },
-    { id: "PT-2026-04-10", amount: "1.250.000đ", date: "10/04/2026", method: "Internet Banking", status: "Thành công" },
-    { id: "PT-2026-03-10", amount: "420.000đ", date: "10/03/2026", method: "Ví điện tử", status: "Thành công" },
-  ];
+﻿import { useEffect, useState } from "react";
+import { getPaymentHistory } from "../../services/feeService";
+
+export default function PaymentHistory() {
+  const [payments, setPayments] = useState([]);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    const data = await getPaymentHistory();
+    setPayments(data || []);
+  };
+
+  const methodLabels = {
+    card: "Thẻ",
+    transfer: "Chuyển khoản",
+    cash: "Tiền mặt",
+  };
+
+  const statusLabels = {
+    paid: "Thành công",
+    pending: "Chờ xác nhận",
+    cancelled: "Đã hủy",
+  };
 
   return (
     <section className="page-card">
@@ -17,6 +37,7 @@
           <thead>
             <tr>
               <th>Mã giao dịch</th>
+              <th>Hóa đơn</th>
               <th>Ngày</th>
               <th>Số tiền</th>
               <th>Phương thức</th>
@@ -24,17 +45,28 @@
             </tr>
           </thead>
           <tbody>
-            {paymentHistory.map((payment) => (
-              <tr key={payment.id}>
-                <td>{payment.id}</td>
-                <td>{payment.date}</td>
-                <td>{payment.amount}</td>
-                <td>{payment.method}</td>
-                <td>
-                  <span className="status-pill status-paid">{payment.status}</span>
+            {payments.length === 0 ? (
+              <tr>
+                <td colSpan="6" style={{ textAlign: "center", padding: "20px" }}>
+                  Chưa có giao dịch nào.
                 </td>
               </tr>
-            ))}
+            ) : (
+              payments.map((payment) => (
+                <tr key={payment.id}>
+                  <td>{payment.payment_code}</td>
+                  <td>{payment.fee_name || payment.fee_code || payment.fee_id}</td>
+                  <td>{payment.payment_date ? new Date(payment.payment_date).toLocaleDateString("vi-VN") : "N/A"}</td>
+                  <td>{Number(payment.amount || 0).toLocaleString("vi-VN")}đ</td>
+                  <td>{methodLabels[payment.method] || payment.method}</td>
+                  <td>
+                    <span className={`status-pill ${payment.status === "paid" ? "status-paid" : "status-pending"}`}>
+                      {statusLabels[payment.status] || payment.status}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

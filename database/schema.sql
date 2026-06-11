@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS apartments (
     motorbikes INT NOT NULL DEFAULT 0,
     bicycles INT NOT NULL DEFAULT 0,
     cars INT NOT NULL DEFAULT 0,
-    status ENUM('empty', 'occupied', 'maintenance') NOT NULL DEFAULT 'empty',
+    status ENUM('empty', 'occupied', 'maintenance', 'sold') NOT NULL DEFAULT 'empty',
     owner_name VARCHAR(100) NULL,
     owner_phone VARCHAR(20) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

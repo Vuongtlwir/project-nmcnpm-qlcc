@@ -28,8 +28,18 @@ const getFeeCollection = async (req, res, next) => {
   }
 };
 
+const getApartmentStatus = async (req, res, next) => {
+  try {
+    const data = await statisticsService.getApartmentStatus();
+    return response.success(res, 'Lấy trạng thái căn hộ thành công', data);
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   getOverview,
   getRevenue,
-  getFeeCollection
+  getFeeCollection,
+  getApartmentStatus
 };

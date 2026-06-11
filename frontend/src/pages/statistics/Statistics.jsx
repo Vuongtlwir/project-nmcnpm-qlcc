@@ -20,7 +20,7 @@ export default function Statistics() {
     <section className="page-card">
       <div className="page-card-header">
         <h2>Thống kê quản trị</h2>
-        <p>Nhìn nhanh dữ liệu vận hành chung cư và các chỉ số quan trọng trong hệ thống.</p>
+        <p>Nhìn nhanh dữ liệu vận hành Eternis City và các chỉ số quan trọng trong hệ thống.</p>
       </div>
 
       <div className="summary-grid" style={{ marginTop: "20px" }}>

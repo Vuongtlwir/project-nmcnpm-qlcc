@@ -7,12 +7,13 @@ export default function Modal({
   confirmText = "Xác nhận",
   cancelText = "Hủy",
   loading = false,
+  wide = false,
 }) {
   if (!isOpen) return null;
 
   return (
     <div className="modal-overlay">
-      <div className="modal-container">
+      <div className={`modal-container${wide ? " wide" : ""}`}>
         <div className="modal-header">
           <h2>{title}</h2>
 

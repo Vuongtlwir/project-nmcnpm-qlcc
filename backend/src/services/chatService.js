@@ -19,9 +19,7 @@ const getUnreadCount = async (userId, viewer) => {
 
 const getAdminUnreadCounts = async () => {
   const counts = await chatRepository.getAdminUnreadCounts();
-  const result = {};
-  counts.forEach(row => { result[row.user_id] = row.count; });
-  return result;
+  return counts;
 };
 
 module.exports = {

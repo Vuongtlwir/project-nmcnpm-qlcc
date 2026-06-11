@@ -15,4 +15,7 @@ router.post('/', authMiddleware.authorize('admin'), feeValidation.validateCreate
 router.put('/:id', authMiddleware.authorize('admin'), feeValidation.validateUpdateFee, feeController.updateFee);
 router.delete('/:id', authMiddleware.authorize('admin'), feeController.deleteFee);
 
+// User pays a fee (creates payment with pending status)
+router.post('/:id/pay', feeController.payFee);
+
 module.exports = router;

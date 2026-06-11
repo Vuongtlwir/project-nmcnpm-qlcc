@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { getResidents } from "../../services/residentService";
 import chatService from "../../services/chatService";
 
@@ -8,6 +8,15 @@ export default function AdminChat() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [unreadCounts, setUnreadCounts] = useState({});
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const loadResidents = useCallback(async () => {
     try {
@@ -21,6 +30,18 @@ export default function AdminChat() {
   useEffect(() => {
     loadResidents();
   }, [loadResidents]);
+
+  useEffect(() => {
+    const fetchUnreadCounts = async () => {
+      const counts = await chatService.getAdminUnreadCounts();
+      const map = {};
+      counts.forEach((item) => { map[item.user_id] = Number(item.count) || 0; });
+      setUnreadCounts(map);
+    };
+    fetchUnreadCounts();
+    const interval = setInterval(fetchUnreadCounts, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(async () => {
@@ -92,6 +113,17 @@ export default function AdminChat() {
               >
                 <p style={{ margin: "0 0 4px", fontWeight: "500" }}>{resident.full_name || "N/A"}</p>
                 <small style={{ color: "#6b7280" }}>{resident.apartment_code || "N/A"}</small>
+                {unreadCounts[resident.user_id] > 0 && (
+                  <span style={{
+                    position: "absolute", top: "4px", right: "4px",
+                    background: "#ef4444", color: "#fff",
+                    borderRadius: "999px", padding: "1px 7px",
+                    fontSize: "0.65rem", fontWeight: 700,
+                    lineHeight: "1.4",
+                  }}>
+                    {unreadCounts[resident.user_id]}
+                  </span>
+                )}
               </div>
             ))}
           </div>
@@ -129,6 +161,7 @@ export default function AdminChat() {
                     </div>
                   </div>
                 ))}
+                <div ref={messagesEndRef} />
               </div>
 
               <div style={{ display: "flex", gap: "10px" }}>

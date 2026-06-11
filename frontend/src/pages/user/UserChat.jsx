@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
 import chatService from "../../services/chatService";
 
@@ -7,11 +7,20 @@ export default function UserChat() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const loadChat = useCallback(async () => {
     if (!user?.id) return;
 
-    const history = await chatService.getConversation(user.id);
+    const history = await chatService.getMyConversation();
     if (history.length === 0) {
       const initialMsg = chatService.createMessage({ sender: "admin", text: "Xin chào, tôi là quản trị viên. Có gì tôi có thể giúp bạn?" });
       setMessages([initialMsg]);
@@ -20,8 +29,8 @@ export default function UserChat() {
       setMessages(history);
     }
 
-    await chatService.markConversationRead(user.id);
-    const count = await chatService.getUnreadCount(user.id);
+    await chatService.markMyConversationRead();
+    const count = await chatService.getUnreadCount();
     setUnreadCount(count);
   }, [user]);
 
@@ -32,7 +41,7 @@ export default function UserChat() {
   useEffect(() => {
     const interval = setInterval(() => {
       if (user?.id) {
-        chatService.getConversation(user.id).then(setMessages);
+        chatService.getMyConversation().then(setMessages);
       }
     }, 5000);
     return () => clearInterval(interval);
@@ -47,7 +56,7 @@ export default function UserChat() {
     await chatService.sendMessage({ user_id: user.id, text: message });
     setMessage("");
 
-    const history = await chatService.getConversation(user.id);
+    const history = await chatService.getMyConversation();
     setMessages(history);
   };
 
@@ -97,6 +106,7 @@ export default function UserChat() {
               </div>
             </div>
           ))}
+          <div ref={messagesEndRef} />
         </div>
 
         <div style={{ display: "flex", gap: "10px" }}>
