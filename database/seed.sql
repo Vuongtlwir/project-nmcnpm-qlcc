@@ -21,29 +21,35 @@ ALTER TABLE notifications AUTO_INCREMENT = 1;
 -- Seed Users
 -- Password for all users: '123456' (bcrypt hash: $2a$10$AbYD1tDuaiAFhYOEjoePWuJJQ2rfXF2ZLr6q1i39/bwaQDWvmw9Bm)
 INSERT INTO users (id, username, email, password, role, full_name, phone, is_active) VALUES
-(1, 'admin', 'admin@qlcc.com', '$2a$10$AbYD1tDuaiAFhYOEjoePWuJJQ2rfXF2ZLr6q1i39/bwaQDWvmw9Bm', 'admin', 'Nguyễn Quang Huy', '0912345678', 1),
-(2, 'user1', 'user1@qlcc.com', '$2a$10$AbYD1tDuaiAFhYOEjoePWuJJQ2rfXF2ZLr6q1i39/bwaQDWvmw9Bm', 'user', 'Trần Lê Vương', '0987654321', 1),
-(3, 'user2', 'user2@qlcc.com', '$2a$10$AbYD1tDuaiAFhYOEjoePWuJJQ2rfXF2ZLr6q1i39/bwaQDWvmw9Bm', 'user', 'Phạm Việt Cường', '0901234567', 1);
+(1, 'admin', 'admin@gmail.com', '$2a$10$AbYD1tDuaiAFhYOEjoePWuJJQ2rfXF2ZLr6q1i39/bwaQDWvmw9Bm', 'admin', 'Nguyễn Quang Huy', '0912345678', 1),
+(2, 'user1', 'user1@gmail.com', '$2a$10$AbYD1tDuaiAFhYOEjoePWuJJQ2rfXF2ZLr6q1i39/bwaQDWvmw9Bm', 'user', 'Trần Lê Vương', '0987654321', 1),
+(3, 'user2', 'user2@gmail.com', '$2a$10$AbYD1tDuaiAFhYOEjoePWuJJQ2rfXF2ZLr6q1i39/bwaQDWvmw9Bm', 'user', 'Phạm Việt Cường', '0901234567', 1);
 
 -- Seed Apartments
 INSERT INTO apartments (id, code, floor, building, area, num_rooms, motorbikes, bicycles, cars, status, owner_name, owner_phone) VALUES
 (1, 'A-101', 1, 'Tòa A', 75.5, 2, 1, 1, 0, 'occupied', 'Trần Lê Vương', '0987654321'),
 (2, 'A-102', 1, 'Tòa A', 75.5, 2, 2, 1, 1, 'occupied', 'Phạm Việt Cường', '0901234567'),
-(3, 'B-201', 2, 'Tòa B', 110.0, 3, 1, 0, 1, 'occupied', 'Lê Hoàng Long', '0933445566'),
-(4, 'B-202', 2, 'Tòa B', 50.0, 1, 0, 0, 0, 'empty', NULL, NULL),
-(5, 'C-301', 3, 'Tòa C', 90.0, 2, 1, 1, 0, 'maintenance', NULL, NULL),
-(6, 'C-302', 3, 'Tòa C', 90.0, 2, 2, 0, 1, 'occupied', 'Nguyễn Thị Hoa', '0944556677');
+(3, 'A-201', 2, 'Tòa A', 110.0, 3, 1, 0, 1, 'occupied', 'Lê Hoàng Long', '0933445566'),
+(4, 'A-202', 2, 'Tòa A', 50.0, 1, 0, 0, 0, 'empty', NULL, NULL),
+(5, 'A-301', 3, 'Tòa A', 90.0, 2, 1, 1, 0, 'maintenance', NULL, NULL),
+(6, 'A-302', 3, 'Tòa A', 90.0, 2, 2, 0, 1, 'occupied', 'Nguyễn Thị Hoa', '0944556677'),
+(7, 'B-101', 1, 'Tòa B', 75.5, 2, 1, 1, 0, 'occupied', 'Nguyễn Việt Cường', '0987659321'),
+(8, 'B-102', 1, 'Tòa B', 75.5, 2, 2, 1, 1, 'occupied', 'Khổng Quốc Anh', '0901789567'),
+(9, 'B-201', 2, 'Tòa B', 110.0, 3, 1, 0, 1, 'occupied', 'Phan Long Giang', '0934915566'),
+(10, 'B-202', 2, 'Tòa B', 50.0, 1, 0, 0, 0, 'empty', NULL, NULL),
+(11, 'B-301', 3, 'Tòa B', 90.0, 2, 1, 1, 0, 'maintenance', NULL, NULL),
+(12, 'B-302', 3, 'Tòa B', 90.0, 2, 2, 0, 1, 'occupied', 'Phạm Lê Anh', '0944128677');
 
 -- Seed Residents
 INSERT INTO residents (id, resident_code, apartment_id, user_id, full_name, date_of_birth, gender, id_card, phone, email, relation, status, move_in_date, move_out_date) VALUES
 (1, 'CD-000001', 1, 2, 'Trần Lê Vương', '1995-05-15', 'male', '123456789', '0987654321', 'user1@qlcc.com', 'owner', 'active', '2025-01-10', NULL),
-(2, 'CD-000002', 1, 2, 'Trần Lê Nam', '2000-08-20', 'male', '123456780', '0987654322', NULL, 'member', 'active', '2025-01-10', NULL),
-(3, 'CD-000003', 2, 3, 'Phạm Việt Cường', '1992-12-01', 'male', '234567890', '0901234567', 'user2@qlcc.com', 'owner', 'active', '2025-02-15', NULL),
-(4, 'CD-000004', 2, NULL, 'Phạm Ngọc Mai', '1995-03-10', 'female', '234567891', NULL, NULL, 'member', 'active', '2025-02-15', NULL),
-(5, 'CD-000005', 3, NULL, 'Lê Hoàng Long', '1988-06-25', 'male', '345678901', '0933445566', 'long.le@gmail.com', 'owner', 'active', '2024-05-20', NULL),
-(6, 'CD-000006', 3, NULL, 'Nguyễn Thu Trang', '1990-10-14', 'female', '345678902', '0933445567', NULL, 'member', 'active', '2024-05-20', NULL),
-(7, 'CD-000007', 6, NULL, 'Nguyễn Thị Hoa', '1980-04-30', 'female', '456789012', '0944556677', 'hoa.nguyen@gmail.com', 'owner', 'active', '2024-12-01', NULL),
-(8, 'CD-000008', 6, NULL, 'Vũ Đình Phong', '1999-07-12', 'male', '456789013', '0944556678', NULL, 'tenant', 'active', '2025-03-01', NULL);
+(2, 'CD-000003', 2, 3, 'Phạm Việt Cường', '1992-12-01', 'male', '234567890', '0901234567', 'user2@qlcc.com', 'owner', 'active', '2025-02-15', NULL),
+(3, 'CD-000005', 3, NULL, 'Lê Hoàng Long', '1988-06-25', 'male', '345678901', '0933445566', 'long.le@gmail.com', 'owner', 'active', '2024-05-20', NULL),
+(4, 'CD-000007', 6, NULL, 'Nguyễn Thị Hoa', '1980-04-30', 'female', '456789012', '0944556677', 'hoa.nguyen@gmail.com', 'owner', 'active', '2024-12-01', NULL),
+(5, 'CD-000002', 7, NULL, 'Nguyễn Việt Cường', '1995-05-15', 'male', '123456790', '0987659321', 'user1@qlcc.com', 'owner', 'active', '2025-01-10', NULL),
+(6, 'CD-000004', 8, NULL, 'Khổng Quốc Anh', '1992-12-01', 'male', '234567891', '0901789567', 'user2@qlcc.com', 'owner', 'active', '2025-02-15', NULL),
+(7, 'CD-000006', 9, NULL, 'Phan Long Giang', '1988-06-25', 'male', '345678902', '0934915566', 'long.le@gmail.com', 'owner', 'active', '2024-05-20', NULL),
+(8, 'CD-000008', 12, NULL, 'Phạm Lê Anh', '1980-04-30', 'female', '456789013', '0944128677', 'hoa.nguyen@gmail.com', 'owner', 'active', '2024-12-01', NULL);
 
 -- Seed Fees
 INSERT INTO fees (id, fee_code, name, type, amount, description, apartment_id, due_date, status) VALUES
@@ -60,11 +66,11 @@ INSERT INTO payments (id, payment_code, fee_id, resident_id, amount, payment_dat
 (3, 'TT-000003', 1, 3, 500000.00, '2026-05-12', 'transfer', 'Căn A-102 nộp tiền quản lý', 'paid'),
 (4, 'TT-000004', 2, 3, 100000.00, '2026-05-12', 'transfer', 'Căn A-102 nộp tiền xe máy', 'paid'),
 (5, 'TT-000005', 5, 1, 300000.00, '2026-04-20', 'cash', 'Căn A-101 đóng phí thang máy', 'paid'),
-(6, 'TT-000006', 1, 5, 500000.00, '2026-05-25', 'transfer', 'Căn B-201 nộp phí quản lý', 'paid'),
-(7, 'TT-000007', 4, 5, 150000.00, '2026-05-25', 'transfer', 'Căn B-201 nộp phí hành lang', 'paid'),
+(6, 'TT-000006', 1, 5, 500000.00, '2026-05-25', 'transfer', 'Căn A-201 nộp phí quản lý', 'paid'),
+(7, 'TT-000007', 4, 5, 150000.00, '2026-05-25', 'transfer', 'Căn A-201 nộp phí hành lang', 'paid'),
 (8, 'TT-000008', 3, 1, 200000.00, '2026-05-28', 'card', 'Ủng hộ quỹ khuyến học', 'paid'),
-(9, 'TT-000009', 1, 7, 500000.00, '2026-05-29', 'transfer', 'Căn C-302 nộp phí quản lý', 'paid'),
-(10, 'TT-000010', 2, 7, 100000.00, '2026-05-29', 'transfer', 'Căn C-302 nộp phí xe máy', 'paid');
+(9, 'TT-000009', 1, 7, 500000.00, '2026-05-29', 'transfer', 'Căn A-302 nộp phí quản lý', 'paid'),
+(10, 'TT-000010', 2, 7, 100000.00, '2026-05-29', 'transfer', 'Căn A-302 nộp phí xe máy', 'paid');
 
 -- Seed Complaints
 INSERT INTO complaints (id, user_id, title, content, status, response) VALUES

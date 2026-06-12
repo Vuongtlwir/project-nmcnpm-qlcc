@@ -17,7 +17,7 @@ const getConversation = async (req, res, next) => {
 const sendMessage = async (req, res, next) => {
   try {
     const { user_id, text } = req.body;
-    const sender = req.user.role === 'admin' ? 'admin' : 'user';
+    const sender = req.body.sender || (req.user.role === 'admin' ? 'admin' : 'user');
     const targetUserId = req.user.role === 'admin' ? user_id : req.user.id;
 
     if (!targetUserId || !text) {

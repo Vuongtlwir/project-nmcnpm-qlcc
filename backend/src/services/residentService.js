@@ -179,10 +179,15 @@ const deleteResident = async (id) => {
   }
 
   const apartmentId = resident.apartment_id;
+  const userId = resident.user_id;
   const success = await residentRepository.deleteById(id);
 
   if (success && apartmentId) {
     await apartmentRepository.update(apartmentId, { status: 'empty' });
+  }
+
+  if (success && userId) {
+    await userRepository.deleteById(userId);
   }
 
   return success;

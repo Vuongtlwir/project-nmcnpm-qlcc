@@ -24,7 +24,7 @@ export default function UserChat() {
     if (history.length === 0) {
       const initialMsg = chatService.createMessage({ sender: "admin", text: "Xin chào, tôi là quản trị viên. Có gì tôi có thể giúp bạn?" });
       setMessages([initialMsg]);
-      await chatService.sendMessage({ user_id: user.id, text: initialMsg.text });
+      await chatService.sendMessage({ user_id: user.id, text: initialMsg.text, sender: "admin" });
     } else {
       setMessages(history);
     }

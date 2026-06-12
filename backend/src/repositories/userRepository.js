@@ -45,10 +45,16 @@ const update = async (id, userData) => {
   return result.affectedRows > 0;
 };
 
+const deleteById = async (id) => {
+  const [result] = await db.execute('DELETE FROM users WHERE id = ?', [id]);
+  return result.affectedRows > 0;
+};
+
 module.exports = {
   findById,
   findByUsername,
   findByEmail,
   create,
-  update
+  update,
+  deleteById
 };

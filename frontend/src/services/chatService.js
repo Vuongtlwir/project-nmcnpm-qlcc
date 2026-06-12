@@ -25,9 +25,9 @@ const getMyConversation = async () => {
   }
 };
 
-const sendMessage = async ({ user_id, text }) => {
+const sendMessage = async ({ user_id, text, sender }) => {
   try {
-    const response = await api.post("/chat/send", { user_id, text });
+    const response = await api.post("/chat/send", { user_id, text, sender });
     return response.data?.data || null;
   } catch {
     return null;
