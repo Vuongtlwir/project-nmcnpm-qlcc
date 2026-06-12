@@ -43,12 +43,12 @@ INSERT INTO apartments (id, code, floor, building, area, num_rooms, motorbikes, 
 -- Seed Residents
 INSERT INTO residents (id, resident_code, apartment_id, user_id, full_name, date_of_birth, gender, id_card, phone, email, relation, status, move_in_date, move_out_date) VALUES
 (1, 'CD-000001', 1, 2, 'Trần Lê Vương', '1995-05-15', 'male', '123456789', '0987654321', 'user1@qlcc.com', 'owner', 'active', '2025-01-10', NULL),
-(2, 'CD-000003', 2, 3, 'Phạm Việt Cường', '1992-12-01', 'male', '234567890', '0901234567', 'user2@qlcc.com', 'owner', 'active', '2025-02-15', NULL),
-(3, 'CD-000005', 3, NULL, 'Lê Hoàng Long', '1988-06-25', 'male', '345678901', '0933445566', 'long.le@gmail.com', 'owner', 'active', '2024-05-20', NULL),
-(4, 'CD-000007', 6, NULL, 'Nguyễn Thị Hoa', '1980-04-30', 'female', '456789012', '0944556677', 'hoa.nguyen@gmail.com', 'owner', 'active', '2024-12-01', NULL),
-(5, 'CD-000002', 7, NULL, 'Nguyễn Việt Cường', '1995-05-15', 'male', '123456790', '0987659321', 'user1@qlcc.com', 'owner', 'active', '2025-01-10', NULL),
-(6, 'CD-000004', 8, NULL, 'Khổng Quốc Anh', '1992-12-01', 'male', '234567891', '0901789567', 'user2@qlcc.com', 'owner', 'active', '2025-02-15', NULL),
-(7, 'CD-000006', 9, NULL, 'Phan Long Giang', '1988-06-25', 'male', '345678902', '0934915566', 'long.le@gmail.com', 'owner', 'active', '2024-05-20', NULL),
+(2, 'CD-000002', 2, 3, 'Phạm Việt Cường', '1992-12-01', 'male', '234567890', '0901234567', 'user2@qlcc.com', 'owner', 'active', '2025-02-15', NULL),
+(3, 'CD-000003', 3, NULL, 'Lê Hoàng Long', '1988-06-25', 'male', '345678901', '0933445566', 'long.le@gmail.com', 'owner', 'active', '2024-05-20', NULL),
+(4, 'CD-000004', 6, NULL, 'Nguyễn Thị Hoa', '1980-04-30', 'female', '456789012', '0944556677', 'hoa.nguyen@gmail.com', 'owner', 'active', '2024-12-01', NULL),
+(5, 'CD-000005', 7, NULL, 'Nguyễn Việt Cường', '1995-05-15', 'male', '123456790', '0987659321', 'cuongle@gmail.com', 'owner', 'active', '2025-01-10', NULL),
+(6, 'CD-000006', 8, NULL, 'Khổng Quốc Anh', '1992-12-01', 'male', '234567891', '0901789567', 'anhquoc@gmail.com', 'owner', 'active', '2025-02-15', NULL),
+(7, 'CD-000007', 9, NULL, 'Phan Long Giang', '1988-06-25', 'male', '345678902', '0934915566', 'long.le@gmail.com', 'owner', 'active', '2024-05-20', NULL),
 (8, 'CD-000008', 12, NULL, 'Phạm Lê Anh', '1980-04-30', 'female', '456789013', '0944128677', 'hoa.nguyen@gmail.com', 'owner', 'active', '2024-12-01', NULL);
 
 -- Seed Fees
