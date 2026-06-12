@@ -123,7 +123,7 @@ Eternis-City-QLCC/
 ### Cách 1: Chạy bằng start.bat (Windows)
 
 ```cmd
-start.bat
+./start.bat
 ```
 
 Script tự động:
@@ -136,7 +136,7 @@ Script tự động:
 > Nếu MySQL dùng mật khẩu khác `root`, đặt biến trước khi chạy:
 > ```cmd
 > set MYSQL_PASSWORD=matkhau_cua_ban
-> start.bat
+> ./start.bat
 > ```
 
 ### Cách 2: Thủ công
@@ -145,7 +145,7 @@ Script tự động:
 
 ```bash
 git clone <url-repo>
-cd Eternis-City-QLCC
+cd project-nmcnpm-qlcc
 ```
 
 **2. Cấu hình backend**
@@ -164,14 +164,16 @@ Sửa file `.env`:
 
 ```bash
 cd backend && npm install
-cd ../frontend && npm install
+cd ..
+cd frontend && npm install
 ```
 
 **4. Import database**
 
 ```bash
-mysql -u root -p < database/schema.sql
-mysql -u root -p < database/seed.sql
+cd database
+mysql --default-character-set=utf8mb4 -u root -p qlcc_db < seed.sql
+mysql --default-character-set=utf8mb4 -u root -p qlcc_db < seed.sql
 ```
 
 **5. Chạy**
