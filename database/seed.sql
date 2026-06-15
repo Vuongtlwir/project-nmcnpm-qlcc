@@ -95,7 +95,7 @@ INSERT INTO notifications (id, user_id, sort_order, title, content, type, is_rea
 
 -- Seed Services
 INSERT INTO services (id, name, description, price, unit, is_active) VALUES
-(1, 'Thang máy chở đồ chuyển nhà', 'Dịch vụ đặt lịch sử dụng thang máy chuyên dụng để vận chuyển đồ đạc khi chuyển nhà, chuyển đồ cồng kềnh.', 500000, 'lượt', 1),
+(1, 'Thang máy chở đồ chuyển nhà', 'Dịch vụ đặt lịch sử dụng thang máy chuyên dụng để vận chuyển đồ đạc khi chuyển nhà, chuyển đồ cồng kềnh.', 0, 'lượt', 1),
 (2, 'Sân BBQ tầng thượng', 'Đặt lịch sử dụng khu vực BBQ trên sân thượng với đầy đủ bàn ghế, bếp nướng. Tối đa 20 người.', 300000, 'buổi', 1),
 (3, 'Phòng sinh hoạt cộng đồng', 'Đặt phòng sinh hoạt cộng đồng cho các sự kiện, tiệc sinh nhật, họp nhóm. Sức chứa 30 người.', 200000, 'buổi', 1),
 (4, 'Dịch vụ vệ sinh căn hộ', 'Dịch vụ vệ sinh định kỳ hoặc theo yêu cầu cho căn hộ, bao gồm lau dọn, hút bụi, vệ sinh nhà bếp và nhà vệ sinh.', 150000, 'lượt', 1),

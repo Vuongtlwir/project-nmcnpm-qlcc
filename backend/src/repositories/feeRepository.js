@@ -47,10 +47,10 @@ const findByCode = async (code) => {
 };
 
 const create = async (fee) => {
-  const { fee_code, name, type, amount, description, apartment_id, due_date, status } = fee;
+  const { fee_code, name, type, amount, description, apartment_id, booking_id, due_date, status } = fee;
   const [result] = await db.execute(
-    'INSERT INTO fees (fee_code, name, type, amount, description, apartment_id, due_date, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-    [fee_code, name, type, amount, description || null, apartment_id || null, due_date, status || 'active']
+    'INSERT INTO fees (fee_code, name, type, amount, description, apartment_id, booking_id, due_date, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [fee_code, name, type, amount, description || null, apartment_id || null, booking_id || null, due_date, status || 'active']
   );
   return result.insertId;
 };

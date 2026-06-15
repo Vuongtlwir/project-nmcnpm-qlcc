@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS fees (
     amount DECIMAL(12, 2) NOT NULL, -- Flat amount or rate per sqm (depending on type)
     description TEXT NULL,
     apartment_id INT NULL, -- NULL means the fee is charged to all apartments
+    booking_id INT NULL, -- Links to service_bookings for service fees
     due_date DATE NOT NULL,
     status ENUM('active', 'closed') NOT NULL DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -156,6 +157,9 @@ CREATE TABLE IF NOT EXISTS service_bookings (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Add booking FK from fees after service_bookings table exists
+ALTER TABLE fees ADD FOREIGN KEY (booking_id) REFERENCES service_bookings(id) ON DELETE SET NULL;
 
 -- Indexes for search optimization
 CREATE INDEX idx_users_username ON users(username);
