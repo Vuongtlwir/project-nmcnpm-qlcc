@@ -33,8 +33,13 @@ const generatePaymentCode = () => {
   return `TT-${generateRandomDigits(6)}`;
 };
 
+const generateBookingCode = () => {
+  return `DV-${generateRandomDigits(6)}`;
+};
+
 module.exports = {
   generateResidentCode,
   generateFeeCode,
-  generatePaymentCode
+  generatePaymentCode,
+  generateBookingCode
 };

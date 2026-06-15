@@ -11,6 +11,7 @@ const notificationRoutes = require('./notificationRoutes');
 const statisticsRoutes = require('./statisticsRoutes');
 const dashboardRoutes = require('./dashboardRoutes');
 const chatRoutes = require('./chatRoutes');
+const serviceRoutes = require('./serviceRoutes');
 
 router.use('/auth', authRoutes);
 router.use('/residents', residentRoutes);
@@ -22,5 +23,6 @@ router.use('/notifications', notificationRoutes);
 router.use('/statistics', statisticsRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/chat', chatRoutes);
+router.use('/services', serviceRoutes);
 
 module.exports = router;

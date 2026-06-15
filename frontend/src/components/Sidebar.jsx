@@ -39,6 +39,13 @@ const icons = {
       <polyline points="10 9 9 9 8 9" />
     </svg>
   ),
+  services: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="16" x2="12" y2="12" />
+      <line x1="12" y1="8" x2="12.01" y2="8" />
+    </svg>
+  ),
   notifications: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -63,6 +70,7 @@ const menuItems = [
   { name: "Cư dân", path: "/admin/residents", icon: icons.residents },
   { name: "Căn hộ", path: "/admin/apartments", icon: icons.apartments },
   { name: "Yêu cầu", path: "/admin/requests", icon: icons.requests },
+  { name: "Dịch vụ", path: "/admin/services", icon: icons.services },
   { name: "Bảng tin", path: "/admin/notifications", icon: icons.notifications },
   { name: "Hóa đơn", path: "/admin/bills", icon: icons.bills },
   { name: "Chat", path: "/admin/chat", icon: icons.chat },

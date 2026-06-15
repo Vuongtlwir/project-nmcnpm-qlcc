@@ -20,6 +20,7 @@ export default function UserLayout() {
 
   const navItems = [
     { to: "/", label: "Trang chủ" },
+    { to: "/services", label: "Dịch vụ" },
     { to: "/fees", label: "Hóa đơn" },
     { to: "/complaints", label: "Phản ánh" },
     { to: "/chat", label: "Tin nhắn" },

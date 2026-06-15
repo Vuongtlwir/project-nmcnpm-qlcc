@@ -22,6 +22,8 @@ import AdminChat from "./pages/admin/AdminChat";
 import AdminRequestManagement from "./pages/admin/AdminRequestManagement";
 import NotificationList from "./pages/notifications/NotificationList";
 import UserChat from "./pages/user/UserChat";
+import UserServices from "./pages/user/UserServices";
+import AdminServiceManagement from "./pages/admin/AdminServiceManagement";
 import Login from "./pages/auth/Login";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 
@@ -68,6 +70,7 @@ function App() {
         <Route path="apartments/:id" element={<ApartmentDetail />} />
         <Route path="requests" element={<AdminRequestManagement />} />
         <Route path="notifications" element={<NotificationList />} />
+        <Route path="services" element={<AdminServiceManagement />} />
         <Route path="chat" element={<AdminChat />} />
       </Route>
 
@@ -76,6 +79,7 @@ function App() {
         <Route path="fees" element={<FeeList />} />
         <Route path="payments" element={<Payment />} />
         <Route path="payment-history" element={<PaymentHistory />} />
+        <Route path="services" element={<UserServices />} />
         <Route path="complaints" element={<ComplaintList />} />
         <Route path="complaints/:id" element={<ComplainDetail />} />
         <Route path="profile" element={<ResidentDetail />} />

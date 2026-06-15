@@ -1,6 +1,9 @@
 USE qlcc_db;
 
 -- Clear tables first to ensure clean seed
+DELETE FROM service_bookings;
+DELETE FROM services;
+DELETE FROM messages;
 DELETE FROM notifications;
 DELETE FROM complaints;
 DELETE FROM payments;
@@ -17,6 +20,9 @@ ALTER TABLE fees AUTO_INCREMENT = 1;
 ALTER TABLE payments AUTO_INCREMENT = 1;
 ALTER TABLE complaints AUTO_INCREMENT = 1;
 ALTER TABLE notifications AUTO_INCREMENT = 1;
+ALTER TABLE services AUTO_INCREMENT = 1;
+ALTER TABLE service_bookings AUTO_INCREMENT = 1;
+ALTER TABLE messages AUTO_INCREMENT = 1;
 
 -- Seed Users
 -- Password for all users: '123456' (bcrypt hash: $2a$10$AbYD1tDuaiAFhYOEjoePWuJJQ2rfXF2ZLr6q1i39/bwaQDWvmw9Bm)
@@ -86,3 +92,12 @@ INSERT INTO notifications (id, user_id, sort_order, title, content, type, is_rea
 (3, 2, 3, 'Xác nhận đã thanh toán phí gửi xe', 'Giao dịch thanh toán phí gửi xe máy tháng 05/2026 của căn hộ A-101 đã thành công.', 'Bảng tin chung cư', 1),
 (4, NULL, 4, 'Ngày hội thể thao cư dân 2026', 'Ban quản lý tổ chức ngày hội thể thao cho cư dân vào ngày 15/06 tại khu vực sân chơi chung cư.', 'Bảng tin chung cư', 0),
 (5, 3, 5, 'Phản hồi khiếu nại của bạn', 'Yêu cầu xử lý bóng đèn hành lang đã bị từ chối do bóng đèn vẫn hoạt động tốt.', 'Bảng tin chung cư', 0);
+
+-- Seed Services
+INSERT INTO services (id, name, description, price, unit, is_active) VALUES
+(1, 'Thang máy chở đồ chuyển nhà', 'Dịch vụ đặt lịch sử dụng thang máy chuyên dụng để vận chuyển đồ đạc khi chuyển nhà, chuyển đồ cồng kềnh.', 500000, 'lượt', 1),
+(2, 'Sân BBQ tầng thượng', 'Đặt lịch sử dụng khu vực BBQ trên sân thượng với đầy đủ bàn ghế, bếp nướng. Tối đa 20 người.', 300000, 'buổi', 1),
+(3, 'Phòng sinh hoạt cộng đồng', 'Đặt phòng sinh hoạt cộng đồng cho các sự kiện, tiệc sinh nhật, họp nhóm. Sức chứa 30 người.', 200000, 'buổi', 1),
+(4, 'Dịch vụ vệ sinh căn hộ', 'Dịch vụ vệ sinh định kỳ hoặc theo yêu cầu cho căn hộ, bao gồm lau dọn, hút bụi, vệ sinh nhà bếp và nhà vệ sinh.', 150000, 'lượt', 1),
+(5, 'Gửi xe khách qua đêm', 'Đăng ký chỗ gửi xe cho khách đến thăm qua đêm tại khu vực tầng hầm.', 50000, 'đêm', 1),
+(6, 'Cho thuê xe đẩy', 'Dịch vụ cho thuê xe đẩy hàng phục vụ việc vận chuyển hàng hóa từ sảnh vào căn hộ.', 20000, 'giờ', 1);
