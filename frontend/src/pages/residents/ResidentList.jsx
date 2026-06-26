@@ -1,33 +1,16 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import Modal from "../../components/Modal";
 import { getResidents } from "../../services/residentService";
 import { createFee } from "../../services/feeService";
-import { getApartmentById } from "../../services/apartmentService";
-
-const serviceFees = [
-  { id: "F-001", label: "Phí vệ sinh", amount: 1250000 },
-  { id: "F-002", label: "Tiền điện", amount: 850000 },
-  { id: "F-003", label: "Tiền nước", amount: 420000 },
-  { id: "F-004", label: "Phí internet", amount: 250000 },
-  { id: "P-001", label: "Phí gửi xe", isParking: true, parkingBreakdown: [
-    { label: "Ô tô", unitPrice: 1000000, vehicleType: "cars" },
-    { label: "Xe máy", unitPrice: 200000, vehicleType: "motorbikes" },
-    { label: "Xe đạp", unitPrice: 100000, vehicleType: "bicycles" },
-  ] },
-];
+import Modal from "../../components/Modal";
 
 export default function ResidentList() {
   const [search, setSearch] = useState("");
   const [residents, setResidents] = useState([]);
-  const [isNotifyModalOpen, setIsNotifyModalOpen] = useState(false);
+  const [showExtraFee, setShowExtraFee] = useState(false);
   const [selectedResident, setSelectedResident] = useState(null);
-  const [apartmentData, setApartmentData] = useState(null);
-  const [extras, setExtras] = useState({});
-  const [selectedMonth, setSelectedMonth] = useState(() => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-  });
+  const [extraLabel, setExtraLabel] = useState("");
+  const [extraAmount, setExtraAmount] = useState("");
 
   const loadResidents = async () => {
     try {
@@ -43,58 +26,29 @@ export default function ResidentList() {
     loadResidents();
   }, []);
 
-  const openFeeModal = async (resident) => {
+  const openExtraFee = (resident) => {
     setSelectedResident(resident);
-    setExtras({});
-    setApartmentData(null);
-    if (resident.apartment_id) {
-      const apt = await getApartmentById(resident.apartment_id);
-      setApartmentData(apt);
-    }
-    setIsNotifyModalOpen(true);
+    setExtraLabel("");
+    setExtraAmount("");
+    setShowExtraFee(true);
   };
 
-  const calcFeeAmount = (fee) => {
-    if (fee.isParking && apartmentData) {
-      return (fee.parkingBreakdown || []).reduce((sum, item) => sum + (item.unitPrice || 0) * (apartmentData[item.vehicleType] || 0), 0);
-    }
-    return fee.amount || 0;
-  };
-
-  const formatMoney = (value) =>
-    Number(value || 0).toLocaleString("vi-VN", { style: "currency", currency: "VND" });
-
-  const handleSendFeeNotification = async () => {
-    if (!selectedResident) return;
+  const handleCreateExtraFee = async () => {
+    if (!selectedResident || !extraLabel.trim() || !extraAmount) return;
     try {
-      const [year, month] = selectedMonth.split("-").map(Number);
-      const dueDate = new Date(year, month, 0);
-      const dueDateStr = dueDate.toISOString().split("T")[0];
-      const monthLabel = `tháng ${month}/${year}`;
-
-      for (const fee of serviceFees) {
-        const baseAmt = calcFeeAmount(fee);
-        const extra = Number(extras[fee.id] || 0);
-        const totalAmt = baseAmt + extra;
-        if (totalAmt <= 0) continue;
-
-        await createFee({
-          name: `${fee.label} ${monthLabel}` + (fee.isParking && baseAmt > 0 ? " (các loại xe)" : ""),
-          type: "mandatory",
-          amount: totalAmt,
-          apartment_id: selectedResident.apartment_id || null,
-          due_date: dueDateStr,
-          description: `Phí cho căn hộ ${selectedResident.apartment_code || selectedResident.apartment_building || "N/A"}`,
-        });
-      }
-
-      window.alert(
-        `Đã tạo hóa đơn cho ${selectedResident.full_name || selectedResident.username || "cư dân"} (${selectedResident.apartment_code || selectedResident.apartment_building || "N/A"}).`
-      );
+      await createFee({
+        name: extraLabel.trim(),
+        type: "mandatory",
+        amount: Number(extraAmount),
+        apartment_id: selectedResident.apartment_id || null,
+        due_date: new Date().toISOString().split("T")[0],
+        description: `Phí phát sinh cho căn hộ ${selectedResident.apartment_code || "N/A"}`,
+      });
+      window.alert("Tạo phí phát sinh thành công.");
+      setShowExtraFee(false);
     } catch (err) {
-      window.alert("Tạo hóa đơn thất bại: " + (err?.response?.data?.message || err.message));
+      window.alert("Lỗi: " + (err?.response?.data?.message || err.message));
     }
-    setIsNotifyModalOpen(false);
   };
 
   const filteredResidents = useMemo(
@@ -166,13 +120,8 @@ export default function ResidentList() {
                   <Link to={`/admin/residents/detail/${resident.id}`} className="secondary-btn">
                     Chi tiết
                   </Link>
-                  <button
-                    type="button"
-                    className="primary-btn"
-                    onClick={() => openFeeModal(resident)}
-                    style={{ fontSize: '0.8rem', padding: '0.35rem 0.7rem' }}
-                  >
-                    Tạo hóa đơn
+                  <button type="button" className="primary-btn" style={{ fontSize: '0.8rem', padding: '0.35rem 0.7rem' }} onClick={() => openExtraFee(resident)}>
+                    Phí phát sinh
                   </button>
                 </td>
               </tr>
@@ -182,69 +131,32 @@ export default function ResidentList() {
       </div>
 
       <Modal
-        isOpen={isNotifyModalOpen}
-        title={`Tạo hóa đơn cho ${selectedResident?.full_name || "cư dân"} - ${selectedResident?.apartment_code || ""}`}
-        onClose={() => setIsNotifyModalOpen(false)}
-        onConfirm={handleSendFeeNotification}
-        confirmText="Tạo hóa đơn"
+        isOpen={showExtraFee}
+        title={`Phí phát sinh - ${selectedResident?.full_name || selectedResident?.linked_username || ""} (${selectedResident?.apartment_code || "N/A"})`}
+        onClose={() => setShowExtraFee(false)}
+        onConfirm={handleCreateExtraFee}
+        confirmText="Tạo phí"
       >
-        <div className="search-field" style={{ marginBottom: "12px" }}>
-          <label>Tháng áp dụng</label>
+        <div className="search-field">
+          <label>Tên phí</label>
           <input
-            type="month"
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
+            type="text"
+            placeholder="VD: Phí sửa chữa, Phí dịch vụ đặc biệt..."
+            value={extraLabel}
+            onChange={(e) => setExtraLabel(e.target.value)}
             style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #d1d5db" }}
           />
         </div>
-        <div style={{ maxHeight: "50vh", overflowY: "auto" }}>
-          {serviceFees.map((fee) => {
-            const baseAmt = calcFeeAmount(fee);
-            const extra = Number(extras[fee.id] || 0);
-            return (
-              <div key={fee.id} style={{ border: "1px solid #e5e7eb", borderRadius: "8px", padding: "12px", marginBottom: "10px" }}>
-                <div style={{ fontWeight: 600, marginBottom: "8px", fontSize: "0.95rem" }}>{fee.label}</div>
-
-                {fee.isParking && apartmentData ? (
-                  <div style={{ background: "#f8fafc", padding: "8px", borderRadius: "6px", fontSize: "0.85rem", marginBottom: "8px" }}>
-                    {(fee.parkingBreakdown || []).map((item) => {
-                      const count = apartmentData[item.vehicleType] || 0;
-                      return (
-                        <div key={item.vehicleType} style={{ display: "flex", justifyContent: "space-between", marginBottom: "2px" }}>
-                          <span>{item.label}: {count} xe</span>
-                          <span>{formatMoney((item.unitPrice || 0) * count)}</span>
-                        </div>
-                      );
-                    })}
-                    <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600, borderTop: "1px solid #d1d5db", paddingTop: "4px", marginTop: "4px" }}>
-                      <span>Tổng phí xe</span>
-                      <span>{formatMoney(baseAmt)}</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{ fontSize: "0.9rem", color: "#4b5563", marginBottom: "8px" }}>
-                    Số tiền: <strong>{formatMoney(baseAmt)}</strong>
-                  </div>
-                )}
-
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <label style={{ fontSize: "0.85rem", whiteSpace: "nowrap", minWidth: "90px" }}>Phí phát sinh:</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={extras[fee.id] || ""}
-                    onChange={(e) => setExtras((prev) => ({ ...prev, [fee.id]: e.target.value }))}
-                    placeholder="0"
-                    style={{ flex: 1, padding: "6px 8px", borderRadius: "6px", border: "1px solid #d1d5db", fontSize: "0.85rem" }}
-                  />
-                </div>
-
-                <div style={{ textAlign: "right", fontWeight: 700, marginTop: "6px", fontSize: "0.9rem", color: "#2563eb" }}>
-                  Thành tiền: {formatMoney(baseAmt + extra)}
-                </div>
-              </div>
-            );
-          })}
+        <div className="search-field" style={{ marginTop: 12 }}>
+          <label>Số tiền</label>
+          <input
+            type="number"
+            min="0"
+            placeholder="0"
+            value={extraAmount}
+            onChange={(e) => setExtraAmount(e.target.value)}
+            style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #d1d5db" }}
+          />
         </div>
       </Modal>
     </section>

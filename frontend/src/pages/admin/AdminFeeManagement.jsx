@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { getFees, getPaymentHistory, confirmPayment } from "../../services/feeService";
 import api from "../../services/api";
 
@@ -59,6 +60,17 @@ export default function AdminFeeManagement() {
       <div className="page-card-header">
         <h2>Quản lý hóa đơn</h2>
         <p>Theo dõi trạng thái thanh toán và xác nhận từ cư dân.</p>
+      </div>
+
+      <div className="page-actions">
+        <div className="page-actions-right" style={{ display: "flex", gap: 8 }}>
+          <Link to="/admin/bills/import" className="secondary-btn">
+            Nhập Excel
+          </Link>
+          <Link to="/admin/bills/create" className="primary-btn">
+            Tạo hóa đơn
+          </Link>
+        </div>
       </div>
 
       {pendingPayments.length > 0 && (

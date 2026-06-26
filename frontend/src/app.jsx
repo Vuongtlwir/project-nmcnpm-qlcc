@@ -19,6 +19,8 @@ import ApartmentDetail from "./pages/apartments/ApartmentDetail";
 import ResidencyList from "./pages/residency/ResidencyList";
 import Dashboard from "./pages/dashboard/Dashboard";
 import AdminFeeManagement from "./pages/admin/AdminFeeManagement";
+import CreateFee from "./pages/fees/CreateFee";
+import BulkCreateFee from "./pages/fees/BulkCreateFee";
 import AdminChat from "./pages/admin/AdminChat";
 import AdminRequestManagement from "./pages/admin/AdminRequestManagement";
 import NotificationList from "./pages/notifications/NotificationList";
@@ -62,6 +64,8 @@ function App() {
       <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
         <Route index element={<Dashboard />} />
         <Route path="bills" element={<AdminFeeManagement />} />
+        <Route path="bills/create" element={<CreateFee />} />
+        <Route path="bills/import" element={<BulkCreateFee />} />
         <Route path="residents" element={<ResidentList />} />
         <Route path="residents/add" element={<AddResident />} />
         <Route path="residents/edit/:id" element={<EditResident />} />

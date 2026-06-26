@@ -32,19 +32,19 @@ INSERT INTO users (id, username, email, password, role, full_name, phone, is_act
 (3, 'user2', 'user2@gmail.com', '$2a$10$AbYD1tDuaiAFhYOEjoePWuJJQ2rfXF2ZLr6q1i39/bwaQDWvmw9Bm', 'user', 'Phạm Việt Cường', '0901234567', 1);
 
 -- Seed Apartments
-INSERT INTO apartments (id, code, floor, building, area, num_rooms, motorbikes, bicycles, cars, status, owner_name, owner_phone) VALUES
-(1, 'A-101', 1, 'Tòa A', 75.5, 2, 1, 1, 0, 'occupied', 'Trần Lê Vương', '0987654321'),
-(2, 'A-102', 1, 'Tòa A', 75.5, 2, 2, 1, 1, 'occupied', 'Phạm Việt Cường', '0901234567'),
-(3, 'A-201', 2, 'Tòa A', 110.0, 3, 1, 0, 1, 'occupied', 'Lê Hoàng Long', '0933445566'),
-(4, 'A-202', 2, 'Tòa A', 50.0, 1, 0, 0, 0, 'empty', NULL, NULL),
-(5, 'A-301', 3, 'Tòa A', 90.0, 2, 1, 1, 0, 'maintenance', NULL, NULL),
-(6, 'A-302', 3, 'Tòa A', 90.0, 2, 2, 0, 1, 'occupied', 'Nguyễn Thị Hoa', '0944556677'),
-(7, 'B-101', 1, 'Tòa B', 75.5, 2, 1, 1, 0, 'occupied', 'Nguyễn Việt Cường', '0987659321'),
-(8, 'B-102', 1, 'Tòa B', 75.5, 2, 2, 1, 1, 'occupied', 'Khổng Quốc Anh', '0901789567'),
-(9, 'B-201', 2, 'Tòa B', 110.0, 3, 1, 0, 1, 'occupied', 'Phan Long Giang', '0934915566'),
-(10, 'B-202', 2, 'Tòa B', 50.0, 1, 0, 0, 0, 'empty', NULL, NULL),
-(11, 'B-301', 3, 'Tòa B', 90.0, 2, 1, 1, 0, 'maintenance', NULL, NULL),
-(12, 'B-302', 3, 'Tòa B', 90.0, 2, 2, 0, 1, 'occupied', 'Phạm Lê Anh', '0944128677');
+INSERT INTO apartments (id, code, floor, building, area, num_rooms, motorbikes, bicycles, cars, electricity_reading, water_reading, last_electricity_reading, last_water_reading, status, owner_name, owner_phone) VALUES
+(1, 'A-101', 1, 'Tòa A', 75.5, 2, 1, 1, 0, 120, 18, 120, 18, 'occupied', 'Trần Lê Vương', '0987654321'),
+(2, 'A-102', 1, 'Tòa A', 75.5, 2, 2, 1, 1, 95, 22, 95, 22, 'occupied', 'Phạm Việt Cường', '0901234567'),
+(3, 'A-201', 2, 'Tòa A', 110.0, 3, 1, 0, 1, 200, 35, 200, 35, 'occupied', 'Lê Hoàng Long', '0933445566'),
+(4, 'A-202', 2, 'Tòa A', 50.0, 1, 0, 0, 0, 0, 0, 0, 0, 'empty', NULL, NULL),
+(5, 'A-301', 3, 'Tòa A', 90.0, 2, 1, 1, 0, 0, 0, 0, 0, 'maintenance', NULL, NULL),
+(6, 'A-302', 3, 'Tòa A', 90.0, 2, 2, 0, 1, 150, 28, 150, 28, 'occupied', 'Nguyễn Thị Hoa', '0944556677'),
+(7, 'B-101', 1, 'Tòa B', 75.5, 2, 1, 1, 0, 80, 15, 80, 15, 'occupied', 'Nguyễn Việt Cường', '0987659321'),
+(8, 'B-102', 1, 'Tòa B', 75.5, 2, 2, 1, 1, 110, 20, 110, 20, 'occupied', 'Khổng Quốc Anh', '0901789567'),
+(9, 'B-201', 2, 'Tòa B', 110.0, 3, 1, 0, 1, 180, 32, 180, 32, 'occupied', 'Phan Long Giang', '0934915566'),
+(10, 'B-202', 2, 'Tòa B', 50.0, 1, 0, 0, 0, 0, 0, 0, 0, 'empty', NULL, NULL),
+(11, 'B-301', 3, 'Tòa B', 90.0, 2, 1, 1, 0, 0, 0, 0, 0, 'maintenance', NULL, NULL),
+(12, 'B-302', 3, 'Tòa B', 90.0, 2, 0, 1, 1, 130, 25, 130, 25, 'occupied', 'Phạm Lê Anh', '0944128677');
 
 -- Seed Residents
 INSERT INTO residents (id, resident_code, apartment_id, user_id, full_name, date_of_birth, gender, id_card, phone, email, relation, status, move_in_date, move_out_date) VALUES

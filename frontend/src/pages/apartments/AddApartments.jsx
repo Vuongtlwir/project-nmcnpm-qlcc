@@ -11,6 +11,11 @@ export default function AddApartments() {
   const [status, setStatus] = useState("empty");
   const [ownerName, setOwnerName] = useState("");
   const [ownerPhone, setOwnerPhone] = useState("");
+  const [motorbikes, setMotorbikes] = useState(0);
+  const [bicycles, setBicycles] = useState(0);
+  const [cars, setCars] = useState(0);
+  const [electricReading, setElectricReading] = useState(0);
+  const [waterReading, setWaterReading] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -32,7 +37,14 @@ export default function AddApartments() {
       num_rooms: Number(numRooms) || 1,
       status,
       owner_name: ownerName.trim(),
-      owner_phone: ownerPhone.trim() || null
+      owner_phone: ownerPhone.trim() || null,
+      motorbikes: Number(motorbikes) || 0,
+      bicycles: Number(bicycles) || 0,
+      cars: Number(cars) || 0,
+      electricity_reading: Number(electricReading) || 0,
+      water_reading: Number(waterReading) || 0,
+      last_electricity_reading: Number(electricReading) || 0,
+      last_water_reading: Number(waterReading) || 0,
     };
 
     try {
@@ -147,6 +159,48 @@ export default function AddApartments() {
             value={ownerPhone}
             onChange={(event) => setOwnerPhone(event.target.value)}
           />
+        </div>
+
+        <h4 style={{ margin: "16px 0 8px", fontSize: "0.9rem" }}>Phương tiện</h4>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+          <div className="search-field">
+            <label htmlFor="motorbikes">Xe máy</label>
+            <input id="motorbikes" type="number" min="0" value={motorbikes} onChange={(e) => setMotorbikes(e.target.value)} placeholder="0" />
+          </div>
+          <div className="search-field">
+            <label htmlFor="bicycles">Xe đạp</label>
+            <input id="bicycles" type="number" min="0" value={bicycles} onChange={(e) => setBicycles(e.target.value)} placeholder="0" />
+          </div>
+          <div className="search-field">
+            <label htmlFor="cars">Ô tô</label>
+            <input id="cars" type="number" min="0" value={cars} onChange={(e) => setCars(e.target.value)} placeholder="0" />
+          </div>
+        </div>
+
+        <h4 style={{ margin: "16px 0 8px", fontSize: "0.9rem" }}>Chỉ số đồng hồ</h4>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div className="search-field">
+            <label htmlFor="electricReading">Chỉ số điện ban đầu (kWh)</label>
+            <input
+              id="electricReading"
+              type="number"
+              min="0"
+              value={electricReading}
+              onChange={(event) => setElectricReading(event.target.value)}
+              placeholder="0"
+            />
+          </div>
+          <div className="search-field">
+            <label htmlFor="waterReading">Chỉ số nước ban đầu (m³)</label>
+            <input
+              id="waterReading"
+              type="number"
+              min="0"
+              value={waterReading}
+              onChange={(event) => setWaterReading(event.target.value)}
+              placeholder="0"
+            />
+          </div>
         </div>
 
         {error && <p className="error-message">{error}</p>}

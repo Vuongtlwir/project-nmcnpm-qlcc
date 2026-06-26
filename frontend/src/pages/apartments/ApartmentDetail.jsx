@@ -104,6 +104,14 @@ export default function ApartmentDetail() {
             <span className="summary-label">Trạng thái</span>
             <strong>{getStatusText(apartment.status)}</strong>
           </div>
+          <div className="summary-card">
+            <span className="summary-label">Chỉ số điện</span>
+            <strong>{apartment.electricity_reading ?? 0} kWh</strong>
+          </div>
+          <div className="summary-card">
+            <span className="summary-label">Chỉ số nước</span>
+            <strong>{apartment.water_reading ?? 0} m³</strong>
+          </div>
         </div>
 
         <div className="page-actions" style={{ justifyContent: "flex-end", marginTop: "18px" }}>
