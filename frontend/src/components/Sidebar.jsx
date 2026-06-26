@@ -69,6 +69,7 @@ const menuItems = [
   { name: "Trang chủ", path: "/admin", icon: icons.dashboard },
   { name: "Cư dân", path: "/admin/residents", icon: icons.residents },
   { name: "Căn hộ", path: "/admin/apartments", icon: icons.apartments },
+  { name: "Cư trú", path: "/admin/residency", icon: icons.residents },
   { name: "Yêu cầu", path: "/admin/requests", icon: icons.requests },
   { name: "Dịch vụ", path: "/admin/services", icon: icons.services },
   { name: "Bảng tin", path: "/admin/notifications", icon: icons.notifications },

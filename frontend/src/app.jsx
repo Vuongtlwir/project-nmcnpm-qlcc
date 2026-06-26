@@ -16,6 +16,7 @@ import EditResident from "./pages/residents/EditResident";
 import ApartmentsList from "./pages/apartments/ApartmentsList";
 import AddApartments from "./pages/apartments/AddApartments";
 import ApartmentDetail from "./pages/apartments/ApartmentDetail";
+import ResidencyList from "./pages/residency/ResidencyList";
 import Dashboard from "./pages/dashboard/Dashboard";
 import AdminFeeManagement from "./pages/admin/AdminFeeManagement";
 import AdminChat from "./pages/admin/AdminChat";
@@ -68,6 +69,7 @@ function App() {
         <Route path="apartments" element={<ApartmentsList />} />
         <Route path="apartments/add" element={<AddApartments />} />
         <Route path="apartments/:id" element={<ApartmentDetail />} />
+        <Route path="residency" element={<ResidencyList />} />
         <Route path="requests" element={<AdminRequestManagement />} />
         <Route path="notifications" element={<NotificationList />} />
         <Route path="services" element={<AdminServiceManagement />} />
