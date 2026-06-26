@@ -15,6 +15,11 @@ export default function AddResident() {
   const [email, setEmail] = useState("");
   const [relation, setRelation] = useState("tenant");
   const [moveInDate, setMoveInDate] = useState("");
+  const [motorbikes, setMotorbikes] = useState(0);
+  const [bicycles, setBicycles] = useState(0);
+  const [cars, setCars] = useState(0);
+  const [motorbikePlates, setMotorbikePlates] = useState("");
+  const [carPlates, setCarPlates] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -58,6 +63,13 @@ export default function AddResident() {
       email: email.trim(),
       relation,
       move_in_date: moveInDate,
+      motorbikes: Number(motorbikes) || 0,
+      bicycles: Number(bicycles) || 0,
+      cars: Number(cars) || 0,
+      vehicle_plates: JSON.stringify({
+        motorbikes: motorbikePlates.split(",").map(s => s.trim()).filter(Boolean),
+        cars: carPlates.split(",").map(s => s.trim()).filter(Boolean),
+      }),
     };
 
     try {
@@ -190,6 +202,36 @@ export default function AddResident() {
                   <label htmlFor="moveInDate">Ngày chuyển vào</label>
                   <input id="moveInDate" type="date" value={moveInDate} onChange={(e) => setMoveInDate(e.target.value)} />
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="page-card" style={{ padding: "24px" }}>
+            <h3 style={{ margin: "0 0 18px", fontSize: "1rem", fontWeight: 700, color: "#0f172a" }}>Phương tiện</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 12 }}>
+              <div className="form-group">
+                <label htmlFor="motorbikes">Xe máy</label>
+                <input id="motorbikes" type="number" min="0" value={motorbikes} onChange={(e) => setMotorbikes(e.target.value)} placeholder="0" />
+              </div>
+              <div className="form-group">
+                <label htmlFor="bicycles">Xe đạp</label>
+                <input id="bicycles" type="number" min="0" value={bicycles} onChange={(e) => setBicycles(e.target.value)} placeholder="0" />
+              </div>
+              <div className="form-group">
+                <label htmlFor="cars">Ô tô</label>
+                <input id="cars" type="number" min="0" value={cars} onChange={(e) => setCars(e.target.value)} placeholder="0" />
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div className="form-group">
+                <label htmlFor="motorbikePlates">Biển số xe máy</label>
+                <input id="motorbikePlates" type="text" value={motorbikePlates} onChange={(e) => setMotorbikePlates(e.target.value)} placeholder="29F1-12345, 30B-67890" />
+                <small style={{ color: "#64748b", fontSize: "0.78rem", marginTop: 4, display: "block" }}>Nhiều biển số cách nhau bằng dấu phẩy</small>
+              </div>
+              <div className="form-group">
+                <label htmlFor="carPlates">Biển số ô tô</label>
+                <input id="carPlates" type="text" value={carPlates} onChange={(e) => setCarPlates(e.target.value)} placeholder="30A-99999" />
+                <small style={{ color: "#64748b", fontSize: "0.78rem", marginTop: 4, display: "block" }}>Nhiều biển số cách nhau bằng dấu phẩy</small>
               </div>
             </div>
           </div>

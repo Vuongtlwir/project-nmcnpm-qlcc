@@ -66,62 +66,44 @@ export default function UserChat() {
         <h2>Chat với quản trị viên</h2>
         <p>Liên hệ với quản trị viên để được hỗ trợ</p>
         {unreadCount > 0 && (
-          <div style={{ marginTop: 12, color: "#dc2626", fontWeight: 600 }}>
+          <div className="chat-unread-badge">
             Bạn có {unreadCount} tin nhắn chưa đọc.
           </div>
         )}
       </div>
 
-      <div style={{ marginTop: "20px", maxWidth: "600px", margin: "20px auto" }}>
-        <div
-          style={{
-            maxHeight: "400px",
-            overflowY: "auto",
-            marginBottom: "20px",
-            padding: "12px",
-            backgroundColor: "#f9fafb",
-            borderRadius: "8px"
-          }}
-        >
+      <div className="chat-container">
+        <div className="chat-header">
+          <div className="chat-header-avatar">QV</div>
+          <div className="chat-header-info">
+            <h4>Quản trị viên</h4>
+            <p>Thường trả lời trong vài phút</p>
+          </div>
+        </div>
+
+        <div className="chat-messages">
           {messages.map((msg) => (
-            <div
-              key={msg.id}
-              style={{
-                marginBottom: "12px",
-                textAlign: msg.sender === "user" ? "right" : "left"
-              }}
-            >
-              <div
-                style={{
-                  display: "inline-block",
-                  maxWidth: "70%",
-                  padding: "10px 12px",
-                  backgroundColor: msg.sender === "user" ? "#3b82f6" : "#e5e7eb",
-                  color: msg.sender === "user" ? "#fff" : "#000",
-                  borderRadius: "8px",
-                  wordWrap: "break-word"
-                }}
-              >
+            <div key={msg.id} className={`chat-bubble ${msg.sender === "user" ? "sent" : "received"}`}>
+              <div className="chat-bubble-content">
                 {msg.text}
+                {msg.created_at && (
+                  <span className="chat-bubble-time">
+                    {new Date(msg.created_at).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
+                  </span>
+                )}
               </div>
             </div>
           ))}
           <div ref={messagesEndRef} />
         </div>
 
-        <div style={{ display: "flex", gap: "10px" }}>
+        <div className="chat-input-area">
           <input
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
             placeholder="Nhập tin nhắn..."
-            style={{
-              flex: 1,
-              padding: "10px 12px",
-              borderRadius: "8px",
-              border: "1px solid #d1d5db"
-            }}
           />
           <button className="primary-btn" onClick={handleSendMessage}>
             Gửi

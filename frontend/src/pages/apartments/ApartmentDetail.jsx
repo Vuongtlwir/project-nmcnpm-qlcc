@@ -112,7 +112,52 @@ export default function ApartmentDetail() {
             <span className="summary-label">Chỉ số nước</span>
             <strong>{apartment.water_reading ?? 0} m³</strong>
           </div>
+          <div className="summary-card">
+            <span className="summary-label">Xe máy</span>
+            <strong>{apartment.motorbikes ?? 0}</strong>
+          </div>
+          <div className="summary-card">
+            <span className="summary-label">Xe đạp</span>
+            <strong>{apartment.bicycles ?? 0}</strong>
+          </div>
+          <div className="summary-card">
+            <span className="summary-label">Ô tô</span>
+            <strong>{apartment.cars ?? 0}</strong>
+          </div>
         </div>
+
+        {apartment.vehicle_plates && (() => {
+          let plates;
+          try { plates = JSON.parse(apartment.vehicle_plates); } catch { plates = null; }
+          if (!plates) return null;
+          return (
+            <div style={{ marginTop: "16px" }}>
+              <h4 style={{ margin: "0 0 10px", fontSize: "0.95rem" }}>Biển số xe</h4>
+              <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+                {plates.motorbikes?.length > 0 && (
+                  <div>
+                    <span style={{ fontSize: "0.8rem", color: "#64748b", fontWeight: 600 }}>Xe máy:</span>
+                    <div style={{ display: "flex", gap: "4px", marginTop: "4px", flexWrap: "wrap" }}>
+                      {plates.motorbikes.map((p, i) => (
+                        <span key={i} style={{ fontSize: "0.82rem", background: "#e0e7ff", color: "#4338ca", padding: "2px 10px", borderRadius: "4px" }}>{p}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {plates.cars?.length > 0 && (
+                  <div>
+                    <span style={{ fontSize: "0.8rem", color: "#64748b", fontWeight: 600 }}>Ô tô:</span>
+                    <div style={{ display: "flex", gap: "4px", marginTop: "4px", flexWrap: "wrap" }}>
+                      {plates.cars.map((p, i) => (
+                        <span key={i} style={{ fontSize: "0.82rem", background: "#dbeafe", color: "#1d4ed8", padding: "2px 10px", borderRadius: "4px" }}>{p}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         <div className="page-actions" style={{ justifyContent: "flex-end", marginTop: "18px" }}>
           <Link to="/admin/apartments" className="secondary-btn">Quay lại</Link>

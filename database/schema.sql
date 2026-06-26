@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS apartments (
     status ENUM('empty', 'occupied', 'maintenance', 'sold') NOT NULL DEFAULT 'empty',
     owner_name VARCHAR(100) NULL,
     owner_phone VARCHAR(20) NULL,
+    vehicle_plates TEXT NULL COMMENT 'JSON: {"motorbikes":["BS1"],"cars":["BS2"]}',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

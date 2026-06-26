@@ -52,7 +52,8 @@ const countAll = async (search = '') => {
 
 const findById = async (id) => {
   const query = `
-    SELECT r.*, a.code AS apartment_code, a.building AS apartment_building, a.status AS apartment_status, u.username AS linked_username 
+    SELECT r.*, a.code AS apartment_code, a.building AS apartment_building, a.status AS apartment_status,
+      a.motorbikes, a.bicycles, a.cars, a.vehicle_plates, u.username AS linked_username 
     FROM residents r
     JOIN apartments a ON r.apartment_id = a.id
     LEFT JOIN users u ON r.user_id = u.id
@@ -64,7 +65,8 @@ const findById = async (id) => {
 
 const findByUserId = async (userId) => {
   const query = `
-    SELECT r.*, a.code AS apartment_code, a.building AS apartment_building, a.status AS apartment_status, u.username AS linked_username 
+    SELECT r.*, a.code AS apartment_code, a.building AS apartment_building, a.status AS apartment_status,
+      a.motorbikes, a.bicycles, a.cars, a.vehicle_plates, u.username AS linked_username 
     FROM residents r
     JOIN apartments a ON r.apartment_id = a.id
     LEFT JOIN users u ON r.user_id = u.id

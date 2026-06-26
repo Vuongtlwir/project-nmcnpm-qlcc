@@ -14,6 +14,8 @@ export default function AddApartments() {
   const [motorbikes, setMotorbikes] = useState(0);
   const [bicycles, setBicycles] = useState(0);
   const [cars, setCars] = useState(0);
+  const [motorbikePlates, setMotorbikePlates] = useState("");
+  const [carPlates, setCarPlates] = useState("");
   const [electricReading, setElectricReading] = useState(0);
   const [waterReading, setWaterReading] = useState(0);
   const [error, setError] = useState("");
@@ -45,6 +47,10 @@ export default function AddApartments() {
       water_reading: Number(waterReading) || 0,
       last_electricity_reading: Number(electricReading) || 0,
       last_water_reading: Number(waterReading) || 0,
+      vehicle_plates: JSON.stringify({
+        motorbikes: motorbikePlates.split(",").map(s => s.trim()).filter(Boolean),
+        cars: carPlates.split(",").map(s => s.trim()).filter(Boolean),
+      }),
     };
 
     try {
@@ -174,6 +180,18 @@ export default function AddApartments() {
           <div className="search-field">
             <label htmlFor="cars">Ô tô</label>
             <input id="cars" type="number" min="0" value={cars} onChange={(e) => setCars(e.target.value)} placeholder="0" />
+          </div>
+        </div>
+
+        <h4 style={{ margin: "16px 0 8px", fontSize: "0.9rem" }}>Biển số xe (cách nhau bằng dấu phẩy)</h4>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div className="search-field">
+            <label htmlFor="motorbikePlates">Biển số xe máy</label>
+            <input id="motorbikePlates" type="text" value={motorbikePlates} onChange={(e) => setMotorbikePlates(e.target.value)} placeholder="29F1-12345, 30B-67890" />
+          </div>
+          <div className="search-field">
+            <label htmlFor="carPlates">Biển số ô tô</label>
+            <input id="carPlates" type="text" value={carPlates} onChange={(e) => setCarPlates(e.target.value)} placeholder="30A-99999" />
           </div>
         </div>
 

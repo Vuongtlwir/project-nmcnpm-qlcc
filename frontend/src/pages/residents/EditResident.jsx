@@ -17,6 +17,11 @@ export default function EditResident() {
   const [relation, setRelation] = useState("tenant");
   const [apartmentId, setApartmentId] = useState("");
   const [moveInDate, setMoveInDate] = useState("");
+  const [motorbikes, setMotorbikes] = useState(0);
+  const [bicycles, setBicycles] = useState(0);
+  const [cars, setCars] = useState(0);
+  const [motorbikePlates, setMotorbikePlates] = useState("");
+  const [carPlates, setCarPlates] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -36,6 +41,16 @@ export default function EditResident() {
           setRelation(data.relation || "tenant");
           setApartmentId(data.apartment_id?.toString() || "");
           setMoveInDate(data.move_in_date || "");
+          setMotorbikes(data.motorbikes ?? 0);
+          setBicycles(data.bicycles ?? 0);
+          setCars(data.cars ?? 0);
+          if (data.vehicle_plates) {
+            try {
+              const plates = JSON.parse(data.vehicle_plates);
+              setMotorbikePlates((plates.motorbikes || []).join(", "));
+              setCarPlates((plates.cars || []).join(", "));
+            } catch { /* ignore */ }
+          }
         }
       } catch (err) {
         setError("Không thể tải dữ liệu cư dân.");
@@ -75,6 +90,13 @@ export default function EditResident() {
       email: email.trim(),
       relation,
       move_in_date: moveInDate,
+      motorbikes: Number(motorbikes) || 0,
+      bicycles: Number(bicycles) || 0,
+      cars: Number(cars) || 0,
+      vehicle_plates: JSON.stringify({
+        motorbikes: motorbikePlates.split(",").map(s => s.trim()).filter(Boolean),
+        cars: carPlates.split(",").map(s => s.trim()).filter(Boolean),
+      }),
     };
 
     try {
@@ -204,6 +226,34 @@ export default function EditResident() {
                 value={moveInDate}
                 onChange={(event) => setMoveInDate(event.target.value)}
               />
+            </div>
+          </div>
+        </div>
+
+        <div className="form-card">
+          <h3>Phương tiện</h3>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 12 }}>
+            <div className="search-field">
+              <label htmlFor="motorbikes">Xe máy</label>
+              <input id="motorbikes" type="number" min="0" value={motorbikes} onChange={(e) => setMotorbikes(e.target.value)} placeholder="0" />
+            </div>
+            <div className="search-field">
+              <label htmlFor="bicycles">Xe đạp</label>
+              <input id="bicycles" type="number" min="0" value={bicycles} onChange={(e) => setBicycles(e.target.value)} placeholder="0" />
+            </div>
+            <div className="search-field">
+              <label htmlFor="cars">Ô tô</label>
+              <input id="cars" type="number" min="0" value={cars} onChange={(e) => setCars(e.target.value)} placeholder="0" />
+            </div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div className="search-field">
+              <label htmlFor="motorbikePlates">Biển số xe máy</label>
+              <input id="motorbikePlates" type="text" value={motorbikePlates} onChange={(e) => setMotorbikePlates(e.target.value)} placeholder="29F1-12345, 30B-67890" />
+            </div>
+            <div className="search-field">
+              <label htmlFor="carPlates">Biển số ô tô</label>
+              <input id="carPlates" type="text" value={carPlates} onChange={(e) => setCarPlates(e.target.value)} placeholder="30A-99999" />
             </div>
           </div>
         </div>

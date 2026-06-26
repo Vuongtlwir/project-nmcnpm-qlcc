@@ -1,5 +1,6 @@
 ﻿import { NavLink } from "react-router-dom";
-import useUnreadMessages from "../hooks/useUnreadMessages";
+import { useState, useRef, useEffect } from "react";
+import useUnreadResidents from "../hooks/useUnreadResidents";
 
 const icons = {
   dashboard: (
@@ -78,7 +79,23 @@ const menuItems = [
 ];
 
 export default function Sidebar() {
-  const unreadCount = useUnreadMessages();
+  const { total: unreadCount, residents: unreadResidents } = useUnreadResidents();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+  const timeoutRef = useRef(null);
+
+  const handleMouseEnter = () => {
+    clearTimeout(timeoutRef.current);
+    setShowDropdown(true);
+  };
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => setShowDropdown(false), 200);
+  };
+
+  useEffect(() => {
+    return () => clearTimeout(timeoutRef.current);
+  }, []);
 
   return (
     <aside className="sidebar">
@@ -106,11 +123,86 @@ export default function Sidebar() {
                 {item.icon}
                 <span>{item.name}</span>
                 {item.path === "/admin/chat" && unreadCount > 0 && (
-                  <span className="badge">
+                  <span
+                    className="badge"
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                    style={{ cursor: "pointer" }}
+                  >
                     {unreadCount > 99 ? "99+" : unreadCount}
                   </span>
                 )}
               </NavLink>
+              {item.path === "/admin/chat" && showDropdown && unreadResidents.length > 0 && (
+                <div
+                  ref={dropdownRef}
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
+                  style={{
+                    position: "absolute",
+                    left: "100%",
+                    top: 0,
+                    marginLeft: 8,
+                    background: "#fff",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: 10,
+                    boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
+                    minWidth: 220,
+                    zIndex: 1000,
+                    padding: "8px 0",
+                  }}
+                >
+                  <div style={{ padding: "6px 14px 10px", fontSize: "0.75rem", fontWeight: 600, color: "#64748b", borderBottom: "1px solid #f1f5f9", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                    Tin nhắn mới
+                  </div>
+                  {unreadResidents.map((r) => (
+                    <NavLink
+                      key={r.user_id}
+                      to="/admin/chat"
+                      state={{ focusUserId: r.user_id }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        padding: "8px 14px",
+                        textDecoration: "none",
+                        color: "#0f172a",
+                        fontSize: "0.85rem",
+                        transition: "background 0.15s",
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = "#f1f5f9"}
+                      onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                    >
+                      <div style={{
+                        width: 28, height: 28, borderRadius: 8,
+                        background: "linear-gradient(135deg, #3b82f6, #60a5fa)",
+                        color: "#fff",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontWeight: 700, fontSize: "0.7rem",
+                        flexShrink: 0,
+                      }}>
+                        {(r.full_name || "?").split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 600, fontSize: "0.83rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {r.full_name || "Không tên"}
+                        </div>
+                        <div style={{ fontSize: "0.72rem", color: "#64748b" }}>
+                          {r.apartment_code || ""} · {r.count} tin
+                        </div>
+                      </div>
+                      <span style={{
+                        background: "#ef4444", color: "#fff",
+                        borderRadius: 999, padding: "1px 7px",
+                        fontSize: "0.65rem", fontWeight: 700,
+                        lineHeight: "1.5",
+                      }}>
+                        {r.count}
+                      </span>
+                    </NavLink>
+                  ))}
+                </div>
+              )}
             </li>
           ))}
         </ul>

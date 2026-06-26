@@ -35,10 +35,13 @@ const getUnreadCount = async (userId, viewer) => {
 
 const getAdminUnreadCounts = async () => {
   const [rows] = await db.execute(`
-    SELECT user_id, COUNT(*) as count
-    FROM messages
-    WHERE sender = 'user' AND is_read = 0
-    GROUP BY user_id
+    SELECT m.user_id, COUNT(*) as count, r.full_name, r.id_card, a.code AS apartment_code
+    FROM messages m
+    LEFT JOIN residents r ON m.user_id = r.user_id
+    LEFT JOIN apartments a ON r.apartment_id = a.id
+    WHERE m.sender = 'user' AND m.is_read = 0
+    GROUP BY m.user_id
+    ORDER BY MAX(m.created_at) DESC
   `);
   return rows;
 };

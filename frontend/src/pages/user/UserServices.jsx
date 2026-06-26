@@ -134,33 +134,11 @@ export default function UserServices() {
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: "8px", marginBottom: "24px" }}>
-        <button
-          type="button"
-          onClick={() => setTab("services")}
-          style={{
-            padding: "8px 18px", borderRadius: "8px", border: "none",
-            cursor: "pointer", fontWeight: 600, fontSize: "0.85rem",
-            fontFamily: "var(--font-sans)",
-            background: tab === "services" ? "#2563eb" : "#f1f5f9",
-            color: tab === "services" ? "#fff" : "#0f172a",
-            transition: "all 0.15s ease",
-          }}
-        >
+      <div className="tab-group">
+        <button type="button" onClick={() => setTab("services")} className={`tab-btn ${tab === "services" ? "active" : ""}`}>
           Danh sách dịch vụ
         </button>
-        <button
-          type="button"
-          onClick={() => setTab("bookings")}
-          style={{
-            padding: "8px 18px", borderRadius: "8px", border: "none",
-            cursor: "pointer", fontWeight: 600, fontSize: "0.85rem",
-            fontFamily: "var(--font-sans)",
-            background: tab === "bookings" ? "#2563eb" : "#f1f5f9",
-            color: tab === "bookings" ? "#fff" : "#0f172a",
-            transition: "all 0.15s ease",
-          }}
-        >
+        <button type="button" onClick={() => setTab("bookings")} className={`tab-btn ${tab === "bookings" ? "active" : ""}`}>
           Đăng ký của tôi
         </button>
       </div>
@@ -262,133 +240,38 @@ export default function UserServices() {
       )}
 
       {showModal && (
-        <div
-          style={{
-            position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            zIndex: 1000, backdropFilter: "blur(4px)", padding: "20px",
-          }}
-          onClick={() => setShowModal(false)}
-        >
-          <div
-            style={{
-              background: "#fff", borderRadius: "16px", width: "100%", maxWidth: "480px",
-              boxShadow: "0 25px 60px rgba(15,23,42,0.2)", overflow: "hidden",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{ padding: "24px 28px 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <h2 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "#0f172a" }}>
-                Đăng ký: {selectedService?.name}
-              </h2>
-              <button
-                type="button"
-                onClick={() => setShowModal(false)}
-                style={{
-                  width: 32, height: 32, border: "none", background: "transparent",
-                  cursor: "pointer", fontSize: "1.5rem", color: "#94a3b8",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  borderRadius: 8,
-                }}
-              >
-                ×
-              </button>
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Đăng ký: {selectedService?.name}</h2>
+              <button type="button" onClick={() => setShowModal(false)} className="modal-close">×</button>
             </div>
 
             <form onSubmit={(e) => e.preventDefault()}>
-              <div style={{ padding: "20px 28px 24px", display: "flex", flexDirection: "column", gap: "18px" }}>
-                <div>
-                  <label style={{ display: "block", fontSize: "0.83rem", fontWeight: 600, color: "#0f172a", marginBottom: 5 }} htmlFor="booking-date">
-                    Ngày đăng ký <span style={{ color: "#ef4444" }}>*</span>
-                  </label>
-                  <input
-                    id="booking-date"
-                    type="date"
-                    value={formData.booking_date}
-                    onChange={handleChange("booking_date")}
-                    style={{
-                      width: "100%", border: "1px solid #e2e8f0", borderRadius: 9,
-                      padding: "9px 13px", outline: "none", fontSize: "0.88rem",
-                      background: "#f8fafc", color: "#0f172a",
-                      fontFamily: "var(--font-sans)", boxSizing: "border-box",
-                    }}
-                    onFocus={(e) => { e.target.style.borderColor = "#2563eb"; e.target.style.background = "#fff"; }}
-                    onBlur={(e) => { e.target.style.borderColor = "#e2e8f0"; e.target.style.background = "#f8fafc"; }}
-                  />
+              <div className="modal-body">
+                <div className="search-field">
+                  <label htmlFor="booking-date">Ngày đăng ký <span style={{ color: "#ef4444" }}>*</span></label>
+                  <input id="booking-date" type="date" value={formData.booking_date} onChange={handleChange("booking_date")} />
                 </div>
 
-                <div>
-                  <label style={{ display: "block", fontSize: "0.83rem", fontWeight: 600, color: "#0f172a", marginBottom: 5 }} htmlFor="booking-time">
-                    Giờ đăng ký
-                  </label>
-                  <input
-                    id="booking-time"
-                    type="time"
-                    value={formData.booking_time}
-                    onChange={handleChange("booking_time")}
-                    style={{
-                      width: "100%", border: "1px solid #e2e8f0", borderRadius: 9,
-                      padding: "9px 13px", outline: "none", fontSize: "0.88rem",
-                      background: "#f8fafc", color: "#0f172a",
-                      fontFamily: "var(--font-sans)", boxSizing: "border-box",
-                    }}
-                    onFocus={(e) => { e.target.style.borderColor = "#2563eb"; e.target.style.background = "#fff"; }}
-                    onBlur={(e) => { e.target.style.borderColor = "#e2e8f0"; e.target.style.background = "#f8fafc"; }}
-                  />
+                <div className="search-field">
+                  <label htmlFor="booking-time">Giờ đăng ký</label>
+                  <input id="booking-time" type="time" value={formData.booking_time} onChange={handleChange("booking_time")} />
                 </div>
 
-                <div>
-                  <label style={{ display: "block", fontSize: "0.83rem", fontWeight: 600, color: "#0f172a", marginBottom: 5 }} htmlFor="booking-notes">
-                    Ghi chú
-                  </label>
-                  <textarea
-                    id="booking-notes"
-                    placeholder="Ghi chú thêm cho ban quản lý..."
-                    value={formData.notes}
-                    onChange={handleChange("notes")}
-                    rows={3}
-                    style={{
-                      width: "100%", border: "1px solid #e2e8f0", borderRadius: 9,
-                      padding: "9px 13px", outline: "none", fontSize: "0.88rem",
-                      background: "#f8fafc", color: "#0f172a",
-                      fontFamily: "var(--font-sans)", boxSizing: "border-box",
-                      resize: "vertical", minHeight: "80px",
-                    }}
-                    onFocus={(e) => { e.target.style.borderColor = "#2563eb"; e.target.style.background = "#fff"; }}
-                    onBlur={(e) => { e.target.style.borderColor = "#e2e8f0"; e.target.style.background = "#f8fafc"; }}
-                  />
+                <div className="search-field">
+                  <label htmlFor="booking-notes">Ghi chú</label>
+                  <textarea id="booking-notes" placeholder="Ghi chú thêm cho ban quản lý..." value={formData.notes} onChange={handleChange("notes")} rows={3} />
                 </div>
 
                 {errorMessage && (
-                  <div style={{ padding: "12px 14px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, color: "#991b1b", fontSize: "0.85rem" }}>
-                    {errorMessage}
-                  </div>
+                  <div className="error-message">{errorMessage}</div>
                 )}
               </div>
 
-              <div style={{ padding: "16px 28px 24px", display: "flex", gap: 10, justifyContent: "flex-end" }}>
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  style={{
-                    padding: "10px 20px", borderRadius: 9, border: "none",
-                    cursor: "pointer", fontWeight: 600, fontSize: "0.88rem",
-                    fontFamily: "var(--font-sans)", background: "#f1f5f9", color: "#0f172a",
-                  }}
-                >
-                  Hủy
-                </button>
-                <button
-                  type="button"
-                  disabled={submitting}
-                  onClick={handleSubmit}
-                  style={{
-                    padding: "10px 20px", borderRadius: 9, border: "none",
-                    cursor: submitting ? "not-allowed" : "pointer",
-                    fontWeight: 600, fontSize: "0.88rem",
-                    fontFamily: "var(--font-sans)", background: submitting ? "#93c5fd" : "#2563eb", color: "#fff",
-                  }}
-                >
+              <div className="modal-footer">
+                <button type="button" onClick={() => setShowModal(false)} className="secondary-btn">Hủy</button>
+                <button type="button" disabled={submitting} onClick={handleSubmit} className="primary-btn" style={submitting ? { opacity: 0.6 } : {}}>
                   {submitting ? "Đang gửi..." : "Xác nhận đăng ký"}
                 </button>
               </div>

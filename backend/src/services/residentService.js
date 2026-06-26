@@ -106,6 +106,16 @@ const createResident = async (residentData) => {
     }
   }
 
+  // Update apartment vehicle info if provided
+  if (residentData.motorbikes !== undefined || residentData.bicycles !== undefined || residentData.cars !== undefined || residentData.vehicle_plates) {
+    const vehicleUpdate = {};
+    if (residentData.motorbikes !== undefined) vehicleUpdate.motorbikes = residentData.motorbikes;
+    if (residentData.bicycles !== undefined) vehicleUpdate.bicycles = residentData.bicycles;
+    if (residentData.cars !== undefined) vehicleUpdate.cars = residentData.cars;
+    if (residentData.vehicle_plates) vehicleUpdate.vehicle_plates = residentData.vehicle_plates;
+    await apartmentRepository.update(apartment.id, vehicleUpdate);
+  }
+
   // Generate unique resident code
   let residentCode;
   let codeExists = true;
@@ -166,6 +176,19 @@ const updateResident = async (id, residentData) => {
     // Update apartment status
     if (apartment.status !== 'occupied') {
       await apartmentRepository.update(apartment.id, { status: 'occupied' });
+    }
+  }
+
+  // Update apartment vehicle info if provided
+  if (residentData.motorbikes !== undefined || residentData.bicycles !== undefined || residentData.cars !== undefined || residentData.vehicle_plates) {
+    const apartment = await apartmentRepository.findById(resident.apartment_id);
+    if (apartment) {
+      const vehicleUpdate = {};
+      if (residentData.motorbikes !== undefined) vehicleUpdate.motorbikes = residentData.motorbikes;
+      if (residentData.bicycles !== undefined) vehicleUpdate.bicycles = residentData.bicycles;
+      if (residentData.cars !== undefined) vehicleUpdate.cars = residentData.cars;
+      if (residentData.vehicle_plates) vehicleUpdate.vehicle_plates = residentData.vehicle_plates;
+      await apartmentRepository.update(apartment.id, vehicleUpdate);
     }
   }
 

@@ -42,8 +42,9 @@ export default function Login() {
       <div className="login-form-side">
         <div className="login-container">
           <div className="login-header">
-            <h1>Apartment Manager</h1>
-            <p>Hệ thống quản lý Eternis City</p>
+            <div className="login-brand-icon">EC</div>
+            <h1>Eternis City</h1>
+            <p>Hệ thống quản lý chung cư</p>
           </div>
 
           <form onSubmit={handleSubmit}>

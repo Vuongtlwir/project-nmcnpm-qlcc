@@ -27,10 +27,10 @@ const findByCode = async (code) => {
 };
 
 const create = async (apartment) => {
-  const { code, floor, building, area, num_rooms, motorbikes = 0, bicycles = 0, cars = 0, electricity_reading = 0, water_reading = 0, last_electricity_reading = 0, last_water_reading = 0, status, owner_name, owner_phone } = apartment;
+  const { code, floor, building, area, num_rooms, motorbikes = 0, bicycles = 0, cars = 0, electricity_reading = 0, water_reading = 0, last_electricity_reading = 0, last_water_reading = 0, status, owner_name, owner_phone, vehicle_plates } = apartment;
   const [result] = await db.execute(
-    'INSERT INTO apartments (code, floor, building, area, num_rooms, motorbikes, bicycles, cars, electricity_reading, water_reading, last_electricity_reading, last_water_reading, status, owner_name, owner_phone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [code, floor, building, area, num_rooms, motorbikes, bicycles, cars, electricity_reading, water_reading, last_electricity_reading, last_water_reading, status || 'empty', owner_name || null, owner_phone || null]
+    'INSERT INTO apartments (code, floor, building, area, num_rooms, motorbikes, bicycles, cars, electricity_reading, water_reading, last_electricity_reading, last_water_reading, status, owner_name, owner_phone, vehicle_plates) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [code, floor, building, area, num_rooms, motorbikes, bicycles, cars, electricity_reading, water_reading, last_electricity_reading, last_water_reading, status || 'empty', owner_name || null, owner_phone || null, vehicle_plates || null]
   );
   return result.insertId;
 };

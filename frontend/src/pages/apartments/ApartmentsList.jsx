@@ -38,10 +38,15 @@ export default function ApartmentsList() {
     cars: item.cars ?? item.car_count ?? item.auto_count ?? item.cars_count ?? 0,
   });
 
+  const parsePlates = (json) => {
+    try { return JSON.parse(json); } catch { return null; }
+  };
+
   const showTransportDetails = (item) => {
     setTransportDetails({
       code: item.code,
       ...getTransportCounts(item),
+      plates: parsePlates(item.vehicle_plates),
     });
   };
 
@@ -271,17 +276,37 @@ export default function ApartmentsList() {
               </button>
             </div>
             <div style={{ display: "grid", gap: "12px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", padding: "12px", background: "#f8fafc", borderRadius: "12px" }}>
-                <span>Xe máy</span>
-                <strong>{transportDetails.motorbikes}</strong>
+              <div style={{ padding: "12px", background: "#f8fafc", borderRadius: "12px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: transportDetails.plates?.motorbikes?.length ? 8 : 0 }}>
+                  <span>Xe máy</span>
+                  <strong>{transportDetails.motorbikes}</strong>
+                </div>
+                {transportDetails.plates?.motorbikes?.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                    {transportDetails.plates.motorbikes.map((p, i) => (
+                      <span key={i} style={{ fontSize: "0.78rem", background: "#e0e7ff", color: "#4338ca", padding: "2px 8px", borderRadius: "4px" }}>{p}</span>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", padding: "12px", background: "#f8fafc", borderRadius: "12px" }}>
-                <span>Xe đạp</span>
-                <strong>{transportDetails.bicycles}</strong>
+              <div style={{ padding: "12px", background: "#f8fafc", borderRadius: "12px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span>Xe đạp</span>
+                  <strong>{transportDetails.bicycles}</strong>
+                </div>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", padding: "12px", background: "#f8fafc", borderRadius: "12px" }}>
-                <span>Ô tô</span>
-                <strong>{transportDetails.cars}</strong>
+              <div style={{ padding: "12px", background: "#f8fafc", borderRadius: "12px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: transportDetails.plates?.cars?.length ? 8 : 0 }}>
+                  <span>Ô tô</span>
+                  <strong>{transportDetails.cars}</strong>
+                </div>
+                {transportDetails.plates?.cars?.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                    {transportDetails.plates.cars.map((p, i) => (
+                      <span key={i} style={{ fontSize: "0.78rem", background: "#dbeafe", color: "#1d4ed8", padding: "2px 8px", borderRadius: "4px" }}>{p}</span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -24,7 +24,11 @@ const residentCreateSchema = Joi.object({
   move_in_date: Joi.date().required().messages({
     'any.required': 'Ngày chuyển vào là bắt buộc'
   }),
-  move_out_date: Joi.date().allow(null)
+  move_out_date: Joi.date().allow(null),
+  motorbikes: Joi.number().integer().min(0).allow(null),
+  bicycles: Joi.number().integer().min(0).allow(null),
+  cars: Joi.number().integer().min(0).allow(null),
+  vehicle_plates: Joi.string().allow(null, '')
 });
 
 const residentUpdateSchema = Joi.object({
@@ -39,7 +43,11 @@ const residentUpdateSchema = Joi.object({
   relation: Joi.string().valid('owner', 'tenant'),
   status: Joi.string().valid('active', 'moved_out'),
   move_in_date: Joi.date(),
-  move_out_date: Joi.date().allow(null)
+  move_out_date: Joi.date().allow(null),
+  motorbikes: Joi.number().integer().min(0).allow(null),
+  bicycles: Joi.number().integer().min(0).allow(null),
+  cars: Joi.number().integer().min(0).allow(null),
+  vehicle_plates: Joi.string().allow(null, '')
 });
 
 const validateRequest = (schema) => {

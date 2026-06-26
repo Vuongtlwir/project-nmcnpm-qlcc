@@ -114,6 +114,21 @@
 - Import tháng sau sẽ dùng giá trị vừa cập nhật làm chỉ số cũ
 - Import tuần tự theo tháng để có consumption chính xác
 
+### Cải thiện UI (admin.css)
+- **Sidebar**: active link có glow trên icon + box-shadow, label có divider `::after`
+- **Page Card**: thêm `::before` gradient accent (xanh dương) ở trên cùng
+- **Table** (`.custom-table` + `.data-table`): gradient header, border-radius góc, row hover xanh nhạt
+- **Stat Card**: icon gradient theo màu từng card (xanh/lá/vàng/tím/đỏ/teal), label uppercase, số to hơn
+- **Button**: gradient primary, hover nâng lên + translateY(-1px), disabled không transform
+- **Status Badge**: border, box-shadow glow theo màu, `pulse-dot` animation cho pending/overdue/processing
+- **Input**: hover đổi border + bg trắng, focus shadow đẹp hơn
+- **Navbar**: blur mạnh hơn (16px), thêm shadow nhẹ
+- **Pagination**: hover nâng lên, active có glow, active scale nhẹ
+- **Table action links**: `a` trong cell-action có transition + active scale
+- **Empty row**: icon 📭 + italic
+- **Loading**: spinner quay bằng CSS `@keyframes spin`
+- **`.table-responsive`**: border + shadow + hover shadow, dùng chung cho mọi bảng inline
+
 ## Giá điện/nước
 - Điện: 3.000đ/kWh (hằng số `ELECTRICITY_PRICE` trong CreateFee.jsx và BulkCreateFee.jsx)
 - Nước: 8.500đ/m³ (hằng số `WATER_PRICE`)

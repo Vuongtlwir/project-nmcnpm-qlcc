@@ -171,29 +171,32 @@ export default function Payment() {
       )}
 
       <div className="page-actions" style={{ flexDirection: "column", alignItems: "stretch" }}>
-        <div className="search-field" style={{ marginBottom: "24px" }}>
-          <label>Hóa đơn đang chọn</label>
-          <div style={{ padding: "18px", borderRadius: "18px", background: "#f8fafc", border: "1px solid #e5e7eb" }}>
-            <p style={{ margin: 0, fontWeight: 600 }}>
+        <div style={{ marginBottom: "24px" }}>
+          <label style={{ fontSize: "0.82rem", fontWeight: 600, color: "#334155", marginBottom: 6, display: "block" }}>Hóa đơn đang chọn</label>
+          <div className={`summary-card ${selectedFee ? "" : ""}`} style={{ background: selectedFee ? "#eff6ff" : "#f8fafc", borderColor: selectedFee ? "#bfdbfe" : "#f1f5f9" }}>
+            <div style={{ fontWeight: 600, color: "#0f172a" }}>
               {selectedFee
                 ? `${selectedFee.fee_code || selectedFee.id} - ${selectedFee.name}`
                 : "Chưa có hóa đơn được chọn"}
-            </p>
-            <p style={{ color: "#6b7280", margin: "8px 0 0" }}>
-              {selectedFee
-                ? `Số tiền: ${Number(selectedFee.amount || 0).toLocaleString("vi-VN")}đ`
-                : "Vui lòng chọn hóa đơn ở danh sách phía dưới."}
-            </p>
-            <p style={{ color: "#6b7280", margin: "4px 0 0" }}>
-              {selectedFee
-                ? `Hạn nộp: ${new Date(selectedFee.due_date).toLocaleDateString("vi-VN")}`
-                : ""}
-            </p>
+            </div>
+            {selectedFee && (
+              <>
+                <div style={{ color: "#2563eb", fontSize: "1.1rem", fontWeight: 700, marginTop: 4 }}>
+                  {Number(selectedFee.amount || 0).toLocaleString("vi-VN")}đ
+                </div>
+                <div style={{ color: "#64748b", fontSize: "0.82rem", marginTop: 2 }}>
+                  Hạn nộp: {new Date(selectedFee.due_date).toLocaleDateString("vi-VN")}
+                </div>
+              </>
+            )}
+            {!selectedFee && (
+              <div style={{ color: "#94a3b8", fontSize: "0.85rem", marginTop: 4 }}>Vui lòng chọn hóa đơn ở danh sách phía dưới.</div>
+            )}
           </div>
         </div>
 
         <div className="page-card" style={{ padding: "22px", marginBottom: "24px" }}>
-          <h3 style={{ marginBottom: "18px" }}>Chọn hóa đơn cần thanh toán</h3>
+          <h3 style={{ marginBottom: "18px", fontSize: "1rem", fontWeight: 700 }}>Chọn hóa đơn cần thanh toán</h3>
           <div className="table-responsive">
             <table className="data-table">
               <thead>

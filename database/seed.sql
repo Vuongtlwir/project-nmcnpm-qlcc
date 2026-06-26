@@ -14,8 +14,8 @@ DELETE FROM users;
 
 -- Reset Auto-increments
 ALTER TABLE users AUTO_INCREMENT = 1;
-ALTER TABLE apartments AUTO_INCREMENT = 1;
-ALTER TABLE residents AUTO_INCREMENT = 1;
+ALTER TABLE apartments AUTO_INCREMENT = 34;
+ALTER TABLE residents AUTO_INCREMENT = 30;
 ALTER TABLE fees AUTO_INCREMENT = 1;
 ALTER TABLE payments AUTO_INCREMENT = 1;
 ALTER TABLE complaints AUTO_INCREMENT = 1;
@@ -44,7 +44,28 @@ INSERT INTO apartments (id, code, floor, building, area, num_rooms, motorbikes, 
 (9, 'B-201', 2, 'Tòa B', 110.0, 3, 1, 0, 1, 180, 32, 180, 32, 'occupied', 'Phan Long Giang', '0934915566'),
 (10, 'B-202', 2, 'Tòa B', 50.0, 1, 0, 0, 0, 0, 0, 0, 0, 'empty', NULL, NULL),
 (11, 'B-301', 3, 'Tòa B', 90.0, 2, 1, 1, 0, 0, 0, 0, 0, 'maintenance', NULL, NULL),
-(12, 'B-302', 3, 'Tòa B', 90.0, 2, 0, 1, 1, 130, 25, 130, 25, 'occupied', 'Phạm Lê Anh', '0944128677');
+(12, 'B-302', 3, 'Tòa B', 90.0, 2, 0, 1, 1, 130, 25, 130, 25, 'occupied', 'Phạm Lê Anh', '0944128677'),
+(13, 'A-103', 1, 'Tòa A', 75.5, 2, 1, 0, 0, 0, 0, 0, 0, 'occupied', 'Nguyễn Văn An', '0911111111'),
+(14, 'A-203', 2, 'Tòa A', 75.5, 2, 1, 1, 0, 0, 0, 0, 0, 'occupied', 'Trần Thị Mai', '0922222222'),
+(15, 'A-303', 3, 'Tòa A', 90.0, 2, 1, 0, 0, 0, 0, 0, 0, 'occupied', 'Lê Văn Tuấn', '0933333333'),
+(16, 'A-401', 4, 'Tòa A', 110.0, 3, 2, 0, 1, 0, 0, 0, 0, 'occupied', 'Phạm Thị Lan', '0944444444'),
+(17, 'A-402', 4, 'Tòa A', 75.5, 2, 0, 1, 0, 0, 0, 0, 0, 'occupied', 'Hoàng Văn Hùng', '0955555555'),
+(18, 'A-403', 4, 'Tòa A', 50.0, 1, 0, 0, 0, 0, 0, 0, 0, 'occupied', 'Vũ Thị Hồng', '0966666666'),
+(19, 'A-501', 5, 'Tòa A', 110.0, 3, 1, 0, 1, 0, 0, 0, 0, 'occupied', 'Đặng Văn Khoa', '0977777777'),
+(20, 'A-502', 5, 'Tòa A', 90.0, 2, 2, 0, 0, 0, 0, 0, 0, 'occupied', 'Bùi Thị Ngọc', '0988888888'),
+(21, 'A-503', 5, 'Tòa A', 75.5, 2, 1, 0, 0, 0, 0, 0, 0, 'occupied', 'Ngô Văn Phúc', '0999999999'),
+(22, 'B-103', 1, 'Tòa B', 75.5, 2, 1, 1, 0, 0, 0, 0, 0, 'occupied', 'Dương Thị Hạnh', '0901111111'),
+(23, 'B-203', 2, 'Tòa B', 75.5, 2, 1, 0, 0, 0, 0, 0, 0, 'occupied', 'Lý Văn Tài', '0902222222'),
+(24, 'B-303', 3, 'Tòa B', 90.0, 2, 2, 0, 0, 0, 0, 0, 0, 'occupied', 'Trịnh Thị Thu', '0903333333'),
+(25, 'B-401', 4, 'Tòa B', 110.0, 3, 1, 0, 1, 0, 0, 0, 0, 'occupied', 'Mai Văn Đức', '0904444444'),
+(26, 'B-402', 4, 'Tòa B', 75.5, 2, 0, 1, 0, 0, 0, 0, 0, 'occupied', 'Tô Thị Hương', '0905555555'),
+(27, 'B-403', 4, 'Tòa B', 75.5, 2, 0, 0, 0, 0, 0, 0, 0, 'occupied', 'Hà Văn Bình', '0906666666'),
+(28, 'B-501', 5, 'Tòa B', 90.0, 2, 1, 0, 0, 0, 0, 0, 0, 'occupied', 'Lương Thị Phương', '0907777777'),
+(29, 'B-502', 5, 'Tòa B', 90.0, 2, 2, 0, 0, 0, 0, 0, 0, 'occupied', 'Đỗ Văn Sang', '0908888888'),
+(30, 'B-503', 5, 'Tòa B', 75.5, 2, 1, 1, 0, 0, 0, 0, 0, 'occupied', 'Võ Thị Yến', '0909999999'),
+(31, 'C-101', 1, 'Tòa C', 75.5, 2, 1, 0, 0, 0, 0, 0, 0, 'occupied', 'Phùng Văn Lợi', '0910000001'),
+(32, 'C-102', 1, 'Tòa C', 75.5, 2, 1, 1, 0, 0, 0, 0, 0, 'occupied', 'Lại Thị Hà', '0910000002'),
+(33, 'C-103', 1, 'Tòa C', 50.0, 1, 0, 0, 0, 0, 0, 0, 0, 'occupied', 'Tạ Văn Nghĩa', '0910000003');
 
 -- Seed Residents
 INSERT INTO residents (id, resident_code, apartment_id, user_id, full_name, date_of_birth, gender, id_card, phone, email, relation, status, move_in_date, move_out_date) VALUES
@@ -55,7 +76,28 @@ INSERT INTO residents (id, resident_code, apartment_id, user_id, full_name, date
 (5, 'CD-000005', 7, NULL, 'Nguyễn Việt Cường', '1995-05-15', 'male', '123456790', '0987659321', 'cuongle@gmail.com', 'owner', 'active', '2025-01-10', NULL),
 (6, 'CD-000006', 8, NULL, 'Khổng Quốc Anh', '1992-12-01', 'male', '234567891', '0901789567', 'anhquoc@gmail.com', 'owner', 'active', '2025-02-15', NULL),
 (7, 'CD-000007', 9, NULL, 'Phan Long Giang', '1988-06-25', 'male', '345678902', '0934915566', 'long.le@gmail.com', 'owner', 'active', '2024-05-20', NULL),
-(8, 'CD-000008', 12, NULL, 'Phạm Lê Anh', '1980-04-30', 'female', '456789013', '0944128677', 'hoa.nguyen@gmail.com', 'owner', 'active', '2024-12-01', NULL);
+(8, 'CD-000008', 12, NULL, 'Phạm Lê Anh', '1980-04-30', 'female', '456789013', '0944128677', 'hoa.nguyen@gmail.com', 'owner', 'active', '2024-12-01', NULL),
+(9, 'CD-000009', 13, NULL, 'Nguyễn Văn An', '1990-03-10', 'male', '123456801', '0911111111', 'an.nguyen@email.com', 'owner', 'active', '2025-06-01', NULL),
+(10, 'CD-000010', 14, NULL, 'Trần Thị Mai', '1987-07-22', 'female', '123456802', '0922222222', 'mai.tran@email.com', 'owner', 'active', '2025-06-01', NULL),
+(11, 'CD-000011', 15, NULL, 'Lê Văn Tuấn', '1993-11-05', 'male', '123456803', '0933333333', 'tuan.le@email.com', 'owner', 'active', '2025-06-05', NULL),
+(12, 'CD-000012', 16, NULL, 'Phạm Thị Lan', '1985-09-18', 'female', '123456804', '0944444444', 'lan.pham@email.com', 'owner', 'active', '2025-06-10', NULL),
+(13, 'CD-000013', 17, NULL, 'Hoàng Văn Hùng', '1991-04-02', 'male', '123456805', '0955555555', 'hung.hoang@email.com', 'owner', 'active', '2025-06-10', NULL),
+(14, 'CD-000014', 18, NULL, 'Vũ Thị Hồng', '1994-08-15', 'female', '123456806', '0966666666', 'hong.vu@email.com', 'owner', 'active', '2025-06-12', NULL),
+(15, 'CD-000015', 19, NULL, 'Đặng Văn Khoa', '1986-12-30', 'male', '123456807', '0977777777', 'khoa.dang@email.com', 'owner', 'active', '2025-06-15', NULL),
+(16, 'CD-000016', 20, NULL, 'Bùi Thị Ngọc', '1992-05-20', 'female', '123456808', '0988888888', 'ngoc.bui@email.com', 'owner', 'active', '2025-06-15', NULL),
+(17, 'CD-000017', 21, NULL, 'Ngô Văn Phúc', '1989-01-12', 'male', '123456809', '0999999999', 'phuc.ngo@email.com', 'owner', 'active', '2025-06-18', NULL),
+(18, 'CD-000018', 22, NULL, 'Dương Thị Hạnh', '1995-06-28', 'female', '123456810', '0901111111', 'hanh.duong@email.com', 'owner', 'active', '2025-06-20', NULL),
+(19, 'CD-000019', 23, NULL, 'Lý Văn Tài', '1988-10-14', 'male', '123456811', '0902222222', 'tai.ly@email.com', 'owner', 'active', '2025-06-20', NULL),
+(20, 'CD-000020', 24, NULL, 'Trịnh Thị Thu', '1993-02-25', 'female', '123456812', '0903333333', 'thu.trinh@email.com', 'owner', 'active', '2025-06-22', NULL),
+(21, 'CD-000021', 25, NULL, 'Mai Văn Đức', '1987-07-07', 'male', '123456813', '0904444444', 'duc.mai@email.com', 'owner', 'active', '2025-06-25', NULL),
+(22, 'CD-000022', 26, NULL, 'Tô Thị Hương', '1991-09-19', 'female', '123456814', '0905555555', 'huong.to@email.com', 'owner', 'active', '2025-06-25', NULL),
+(23, 'CD-000023', 27, NULL, 'Hà Văn Bình', '1986-04-04', 'male', '123456815', '0906666666', 'binh.ha@email.com', 'owner', 'active', '2025-07-01', NULL),
+(24, 'CD-000024', 28, NULL, 'Lương Thị Phương', '1994-11-11', 'female', '123456816', '0907777777', 'phuong.luong@email.com', 'owner', 'active', '2025-07-01', NULL),
+(25, 'CD-000025', 29, NULL, 'Đỗ Văn Sang', '1990-08-08', 'male', '123456817', '0908888888', 'sang.do@email.com', 'owner', 'active', '2025-07-02', NULL),
+(26, 'CD-000026', 30, NULL, 'Võ Thị Yến', '1992-12-12', 'female', '123456818', '0909999999', 'yen.vo@email.com', 'owner', 'active', '2025-07-02', NULL),
+(27, 'CD-000027', 31, NULL, 'Phùng Văn Lợi', '1985-03-03', 'male', '123456819', '0910000001', 'loi.phung@email.com', 'owner', 'active', '2025-07-05', NULL),
+(28, 'CD-000028', 32, NULL, 'Lại Thị Hà', '1993-10-10', 'female', '123456820', '0910000002', 'ha.lai@email.com', 'owner', 'active', '2025-07-05', NULL),
+(29, 'CD-000029', 33, NULL, 'Tạ Văn Nghĩa', '1988-06-06', 'male', '123456821', '0910000003', 'nghia.ta@email.com', 'owner', 'active', '2025-07-10', NULL);
 
 -- Seed Fees
 INSERT INTO fees (id, fee_code, name, type, amount, description, apartment_id, due_date, status) VALUES
@@ -92,6 +134,32 @@ INSERT INTO notifications (id, user_id, sort_order, title, content, type, is_rea
 (3, 2, 3, 'Xác nhận đã thanh toán phí gửi xe', 'Giao dịch thanh toán phí gửi xe máy tháng 05/2026 của căn hộ A-101 đã thành công.', 'Bảng tin chung cư', 1),
 (4, NULL, 4, 'Ngày hội thể thao cư dân 2026', 'Ban quản lý tổ chức ngày hội thể thao cho cư dân vào ngày 15/06 tại khu vực sân chơi chung cư.', 'Bảng tin chung cư', 0),
 (5, 3, 5, 'Phản hồi khiếu nại của bạn', 'Yêu cầu xử lý bóng đèn hành lang đã bị từ chối do bóng đèn vẫn hoạt động tốt.', 'Bảng tin chung cư', 0);
+
+-- Seed Vehicle Plates (JSON: {"motorbikes":["plate1",...],"cars":["plate1",...]})
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["29F1-12345"]}' WHERE code = 'A-101';
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["29F1-67890","30B-24680"],"cars":["30A-99999"]}' WHERE code = 'A-102';
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["30B-11111"],"cars":["30A-88888"]}' WHERE code = 'A-201';
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["30C-33333","30C-44444"],"cars":["30A-77777"]}' WHERE code = 'A-302';
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["29F1-55555"]}' WHERE code = 'B-101';
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["30D-66666","30D-77777"],"cars":["29A-66666"]}' WHERE code = 'B-102';
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["30E-88888"],"cars":["30A-55555"]}' WHERE code = 'B-201';
+UPDATE apartments SET vehicle_plates = '{"cars":["30A-44444"]}' WHERE code = 'B-302';
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["29F1-77777"]}' WHERE code = 'A-103';
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["30G-11111"]}' WHERE code = 'A-203';
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["30G-22222"]}' WHERE code = 'A-303';
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["30G-33333","30G-44444"],"cars":["30A-33333"]}' WHERE code = 'A-401';
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["30G-55555"],"cars":["30A-22222"]}' WHERE code = 'A-501';
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["30G-66666","30G-77777"]}' WHERE code = 'A-502';
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["30H-11111"]}' WHERE code = 'A-503';
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["30H-22222"]}' WHERE code = 'B-103';
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["30H-33333"]}' WHERE code = 'B-203';
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["30H-44444","30H-55555"]}' WHERE code = 'B-303';
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["30H-66666"],"cars":["30A-11111"]}' WHERE code = 'B-401';
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["30I-11111"]}' WHERE code = 'B-501';
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["30I-22222","30I-33333"]}' WHERE code = 'B-502';
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["30I-44444"]}' WHERE code = 'B-503';
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["30I-55555"]}' WHERE code = 'C-101';
+UPDATE apartments SET vehicle_plates = '{"motorbikes":["30I-66666"]}' WHERE code = 'C-102';
 
 -- Seed Services
 INSERT INTO services (id, name, description, price, unit, is_active) VALUES
