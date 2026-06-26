@@ -28,14 +28,14 @@ export default function BulkCreateFee() {
     const wb = XLSX.utils.book_new();
     const data = [
       ["Mã căn hộ", `Chỉ số điện ${label}`, `Chỉ số nước ${label}`],
-      ["A-101", 150, 25],
-      ["A-102", 200, 30],
-      ["A-201", 280, 42],
-      ["A-302", 210, 32],
-      ["B-101", 110, 20],
-      ["B-102", 145, 26],
-      ["B-201", 240, 38],
-      ["B-302", 180, 30],
+      ["A-101", 180, 30],
+      ["A-102", 160, 36],
+      ["A-201", 280, 48],
+      ["A-302", 220, 36],
+      ["B-101", 120, 24],
+      ["B-102", 160, 28],
+      ["B-201", 250, 44],
+      ["B-302", 190, 33],
     ];
     const ws = XLSX.utils.aoa_to_sheet(data);
     XLSX.utils.book_append_sheet(wb, ws, "Mẫu");
@@ -170,7 +170,7 @@ export default function BulkCreateFee() {
   const validRows = rows.filter((r) => !r.error);
   const totalAll = validRows.reduce((s, r) => s + r.total, 0);
   const [yearNum, monthNum] = month.split("-").map(Number);
-
+  const prevMonthLabel = monthNum > 1 ? `tháng ${monthNum - 1}` : `tháng 12 (năm ${yearNum - 1})`;
   return (
     <section className="page-card">
       <div className="page-card-header">
@@ -212,8 +212,8 @@ export default function BulkCreateFee() {
                     <th>Căn hộ</th>
                     <th>Chủ hộ</th>
                     <th>Xe máy/Xe đạp/Ô tô</th>
-                    <th>Điện (cũ → tháng {monthNum})</th>
-                    <th>Nước (cũ → tháng {monthNum})</th>
+                    <th>Điện ({prevMonthLabel} → tháng {monthNum})</th>
+                    <th>Nước ({prevMonthLabel} → tháng {monthNum})</th>
                     <th>Tiền điện</th>
                     <th>Tiền nước</th>
                     <th>Phí gửi xe</th>
@@ -227,8 +227,8 @@ export default function BulkCreateFee() {
                       <td><strong>{r.code}</strong></td>
                       <td>{r.error ? <span style={{ color: "#ef4444" }}>{r.error}</span> : r.owner}</td>
                       <td>{r.error ? "—" : `${r.motorbikes}/${r.bicycles}/${r.cars}`}</td>
-                      <td>{r.error ? "—" : `${r.lastElectric} → ${r.newElectric}`}</td>
-                      <td>{r.error ? "—" : `${r.lastWater} → ${r.newWater}`}</td>
+                      <td>{r.error ? "—" : `${r.electricUsage} kWh (${r.lastElectric} → ${r.newElectric})`}</td>
+                      <td>{r.error ? "—" : `${r.waterUsage} m³ (${r.lastWater} → ${r.newWater})`}</td>
                       <td>{r.error ? "—" : formatMoney(r.electricAmount)}</td>
                       <td>{r.error ? "—" : formatMoney(r.waterAmount)}</td>
                       <td>{r.error ? "—" : formatMoney(r.parkingAmount)}</td>

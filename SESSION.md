@@ -87,20 +87,32 @@
 - `database/migration_001_add_meter_readings.sql`
 - `database/mau_nhap_so_dien_nuoc.xlsx`
 
-## Seed data - Chỉ số tháng 5 test case
-- Đã thêm `last_electricity_reading`, `last_water_reading`, `electricity_reading`, `water_reading` vào seed.sql
-- Các căn hộ occupied có chỉ số tháng 5:
-  - A-101: điện 120, nước 18
-  - A-102: điện 95, nước 22
-  - A-201: điện 200, nước 35
-  - A-302: điện 150, nước 28
-  - B-101: điện 80, nước 15
-  - B-102: điện 110, nước 20
-  - B-201: điện 180, nước 32
-  - B-302: điện 130, nước 25
-- Căn hộ empty/maintenance: chỉ số = 0
-- File mẫu Excel (`mau_nhap_so_dien_nuoc.xlsx`) đã cập nhật chỉ số tháng 6 cho 8 căn hộ (cao hơn tháng 5)
-- Mẫu download trong BulkCreateFee cũng cập nhật 8 dòng dữ liệu test
+## Session 26/06/2026 (tiếp)
+
+### Sửa lỗi due date timezone
+- `new Date()` → `new Date(Date.UTC(...))` trong CreateFee.jsx:44 và BulkCreateFee.jsx:62
+- Fix due date bị lệch -1 ngày do UTC+7 (VD: 30/4 → 29/4)
+
+### Đổi hiển thị bảng preview BulkCreateFee
+- Header cột: `Điện (cũ → tháng X)` → `Điện (tháng X-1 → tháng X)` dùng `prevMonthLabel`
+- Data: `chỉ số cũ → chỉ số mới` → `số kWh/m³ tiêu thụ (chỉ số cũ → chỉ số mới)`
+- VD: `30 kWh (120 → 150)` thay vì `120 → 150`
+
+### Cập nhật dữ liệu mẫu
+- File static `mau_nhap_so_dien_nuoc.xlsx` + mẫu download: bỏ hardcode tháng, đổi header thành "Chi so dien thang" / "Chi so nuoc thang"
+- Dữ liệu mẫu chuyển từ tháng 6 → tháng 7 (cao hơn seed tháng 5 ~2 tháng)
+- 8 căn hộ test với chỉ số tháng 7 mới
+
+### Chạy lại DB
+- Drop + recreate DB với `utf8mb4`
+- Schema + seed chạy qua `[System.IO.File]::ReadAllText` + `-Encoding UTF8` để giữ font tiếng Việt
+- Seed tháng 5 đã được verify đúng (A-101: điện=120, nước=18)
+
+### Cơ chế Import Excel
+- Import tháng N: tính `chỉ số mới - last_*_reading` → tạo hóa đơn
+- Sau đó cập nhật `last_*_reading = chỉ số mới`
+- Import tháng sau sẽ dùng giá trị vừa cập nhật làm chỉ số cũ
+- Import tuần tự theo tháng để có consumption chính xác
 
 ## Giá điện/nước
 - Điện: 3.000đ/kWh (hằng số `ELECTRICITY_PRICE` trong CreateFee.jsx và BulkCreateFee.jsx)
