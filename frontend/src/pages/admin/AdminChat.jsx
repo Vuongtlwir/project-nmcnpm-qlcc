@@ -3,6 +3,19 @@ import { useLocation } from "react-router-dom";
 import { getResidents } from "../../services/residentService";
 import chatService from "../../services/chatService";
 
+const rootStyle = {
+  display: "flex", flexDirection: "column",
+  height: "calc(100vh - 68px - 56px)",
+  overflow: "hidden",
+  borderRadius: 14, border: "1px solid #e8edf4",
+  background: "#fff",
+  boxShadow: "0 1px 3px rgba(15,23,42,0.04)",
+};
+
+const chatBodyStyle = {
+  display: "flex", flex: 1, minHeight: 0, overflow: "hidden",
+};
+
 export default function AdminChat() {
   const location = useLocation();
   const focusUserId = location.state?.focusUserId;
@@ -113,92 +126,121 @@ export default function AdminChat() {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0, margin: "-28px -32px" }}>
-      <div style={{
-        padding: "20px 32px 0",
-        display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0,
-      }}>
-        <div>
-          <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#0f172a", margin: "0 0 4px", textTransform: "none", letterSpacing: "normal" }}>Chat với cư dân</h2>
-          <p style={{ margin: "0 0 16px", color: "#64748b", fontSize: "0.85rem" }}>Gửi tin nhắn trực tiếp đến các cư dân</p>
-        </div>
+    <div style={rootStyle}>
+      <div style={{ padding: "12px 24px", borderBottom: "1px solid #f1f5f9", flexShrink: 0 }}>
+        <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "#0f172a", margin: 0, textTransform: "none", letterSpacing: "normal" }}>Chat với cư dân</h2>
       </div>
 
-      <div className="chat-container" style={{ borderRadius: 0, borderLeft: "none", borderRight: "none", borderBottom: "none" }}>
-        <div className="chat-sidebar">
-          <div className="chat-sidebar-header">
-            <h3 style={{ margin: 0, fontSize: "0.95rem" }}>Danh sách cư dân</h3>
+      <div style={chatBodyStyle}>
+        <div style={{ width: 280, borderRight: "1px solid #e8edf4", display: "flex", flexDirection: "column", flexShrink: 0 }}>
+          <div style={{ padding: "12px 16px", borderBottom: "1px solid #e8edf4" }}>
+            <h3 style={{ margin: 0, fontSize: "0.83rem", fontWeight: 600, color: "#0f172a" }}>Danh sách cư dân</h3>
           </div>
-          <div className="chat-sidebar-list">
+          <div style={{ flex: 1, overflowY: "auto", padding: 4 }}>
             {residents.map((resident) => (
               <div
                 key={resident.id}
                 onClick={() => resident.user_id && handleSelectResident(resident)}
-                className={`chat-user-item ${selectedResident?.id === resident.id ? "active" : ""}`}
-                style={resident.user_id ? {} : { opacity: 0.5, cursor: "default" }}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10, padding: "8px 10px",
+                  borderRadius: 8, cursor: resident.user_id ? "pointer" : "default",
+                  background: selectedResident?.id === resident.id ? "#eff6ff" : "transparent",
+                  opacity: resident.user_id ? 1 : 0.5,
+                }}
+                onMouseEnter={e => { if (selectedResident?.id !== resident.id) e.currentTarget.style.background = "#f1f5f9"; }}
+                onMouseLeave={e => { if (selectedResident?.id !== resident.id) e.currentTarget.style.background = "transparent"; }}
               >
-                <div className="chat-user-avatar">
+                <div style={{
+                  width: 34, height: 34, borderRadius: 8, flexShrink: 0,
+                  background: "linear-gradient(135deg, #3b82f6, #60a5fa)", color: "#fff",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontWeight: 700, fontSize: "0.75rem",
+                }}>
                   {(resident.full_name || "?").split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)}
                 </div>
-                <div className="chat-user-info">
-                  <div className="chat-user-name">{resident.full_name || "N/A"}</div>
-                  <div className="chat-user-preview">
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: "0.8rem", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{resident.full_name || "N/A"}</div>
+                  <div style={{ fontSize: "0.72rem", color: "#94a3b8" }}>
                     {resident.apartment_code || "N/A"}
-                    {!resident.user_id && <span style={{ color: "#ef4444", fontSize: "0.7rem", marginLeft: 6 }}>Chưa có TK</span>}
+                    {!resident.user_id && <span style={{ color: "#ef4444" }}> (Chưa có TK)</span>}
                   </div>
                 </div>
-                <div className="chat-user-meta">
-                  {unreadCounts[resident.user_id] > 0 && (
-                    <span className="chat-user-unread">{unreadCounts[resident.user_id]}</span>
-                  )}
-                </div>
+                {unreadCounts[resident.user_id] > 0 && (
+                  <span style={{
+                    background: "#3b82f6", color: "#fff", borderRadius: 999,
+                    fontSize: "0.6rem", fontWeight: 700, minWidth: 16,
+                    padding: "0 5px", textAlign: "center", display: "inline-block",
+                  }}>
+                    {unreadCounts[resident.user_id]}
+                  </span>
+                )}
               </div>
             ))}
           </div>
         </div>
 
-        <div className="chat-main">
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
           {selectedResident ? (
             <>
-              <div className="chat-main-header">
-                <div className="chat-user-avatar" style={{ width: 36, height: 36, fontSize: "0.8rem" }}>
+              <div style={{ padding: "12px 20px", borderBottom: "1px solid #e8edf4", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                <div style={{
+                  width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                  background: "linear-gradient(135deg, #3b82f6, #60a5fa)", color: "#fff",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontWeight: 700, fontSize: "0.75rem",
+                }}>
                   {(selectedResident.full_name || "?").split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)}
                 </div>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: "0.95rem" }}>{selectedResident.full_name}</h4>
-                  <small style={{ color: "#64748b" }}>{selectedResident.apartment_code} - {selectedResident.apartment_building}</small>
+                  <h4 style={{ margin: 0, fontSize: "0.88rem", fontWeight: 600, color: "#0f172a" }}>{selectedResident.full_name}</h4>
+                  <small style={{ color: "#64748b", fontSize: "0.75rem" }}>{selectedResident.apartment_code}</small>
                 </div>
               </div>
 
-              <div className="chat-messages">
+              <div style={{ flex: 1, overflowY: "auto", padding: "12px 20px", display: "flex", flexDirection: "column", gap: 6, background: "#f8fafc" }}>
                 {messages.map((msg) => (
-                  <div key={msg.id} className={`chat-message ${msg.sender === "admin" ? "sent" : "received"}`}>
-                    <div>
-                      {msg.text}
-                      {msg.created_at && (
-                        <div className="chat-message-time">
-                          {new Date(msg.created_at).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
-                        </div>
-                      )}
-                    </div>
+                  <div
+                    key={msg.id}
+                    style={{
+                      alignSelf: msg.sender === "admin" ? "flex-end" : "flex-start",
+                      background: msg.sender === "admin" ? "#3b82f6" : "#fff",
+                      color: msg.sender === "admin" ? "#fff" : "#0f172a",
+                      border: msg.sender === "admin" ? "none" : "1px solid #e8edf4",
+                      maxWidth: "75%", padding: "8px 14px", borderRadius: 12,
+                      borderBottomRightRadius: msg.sender === "admin" ? 4 : 12,
+                      borderBottomLeftRadius: msg.sender === "admin" ? 12 : 4,
+                      fontSize: "0.83rem", lineHeight: 1.5, wordWrap: "break-word",
+                    }}
+                  >
+                    {msg.text}
+                    {msg.created_at && (
+                      <div style={{ fontSize: "0.6rem", opacity: 0.6, marginTop: 2 }}>
+                        {new Date(msg.created_at).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
+                      </div>
+                    )}
                   </div>
                 ))}
                 <div ref={messagesEndRef} />
               </div>
 
-              <div className="chat-input-area">
+              <div style={{ padding: "12px 20px", borderTop: "1px solid #e8edf4", display: "flex", gap: 10, alignItems: "center", flexShrink: 0 }}>
                 <input
                   type="text"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
                   placeholder="Nhập tin nhắn..."
+                  style={{
+                    flex: 1, border: "1px solid #e2e8f0", borderRadius: 10,
+                    padding: "10px 14px", outline: "none", fontSize: "0.85rem",
+                    fontFamily: "inherit",
+                  }}
                 />
-                <button className="primary-btn" onClick={handleSendMessage}>Gửi</button>
+                <button className="primary-btn" onClick={handleSendMessage} style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: "#3b82f6", color: "#fff", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", fontFamily: "inherit" }}>Gửi</button>
               </div>
             </>
           ) : (
-            <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: "0.95rem" }}>
+            <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: "0.9rem" }}>
               Chọn cư dân để bắt đầu chat
             </div>
           )}

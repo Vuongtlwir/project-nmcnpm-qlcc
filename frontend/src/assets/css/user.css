@@ -964,9 +964,42 @@
 }
 
 /* ===== CHAT IMPROVED ===== */
+.chat-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #94a3b8;
+  gap: 12px;
+}
+
+.chat-loading p {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.chat-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #ef4444;
+  gap: 12px;
+}
+
+.chat-error p {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
 .chat-container {
-  max-width: 650px;
-  margin: 20px auto 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  margin-top: 20px;
 }
 
 .chat-header {
