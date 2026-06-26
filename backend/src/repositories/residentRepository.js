@@ -2,7 +2,19 @@ const db = require('../config/database');
 
 const findAll = async ({ limit = 10, offset = 0, search = '' }) => {
   let query = `
-    SELECT r.*, a.code AS apartment_code, a.building AS apartment_building, u.username AS linked_username 
+    SELECT r.*, a.code AS apartment_code, a.building AS apartment_building, u.username AS linked_username,
+      CASE
+        WHEN NOT EXISTS (
+          SELECT 1 FROM fees f
+          WHERE f.status = 'active'
+            AND (f.apartment_id = r.apartment_id OR f.apartment_id IS NULL)
+            AND NOT EXISTS (
+              SELECT 1 FROM payments p
+              WHERE p.fee_id = f.id AND p.status = 'paid'
+            )
+        ) THEN 'paid'
+        ELSE 'unpaid'
+      END AS fee_status
     FROM residents r
     JOIN apartments a ON r.apartment_id = a.id
     LEFT JOIN users u ON r.user_id = u.id

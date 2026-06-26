@@ -48,34 +48,35 @@ const getRevenueByMonth = async () => {
 };
 
 const getFeeCollectionRate = async () => {
-  const query = `
-    SELECT 
-      p.status,
-      SUM(p.amount) AS total_amount
+  const paymentQuery = `
+    SELECT p.status, SUM(p.amount) AS total_amount
     FROM payments p
     GROUP BY p.status
   `;
-  const [rows] = await db.query(query);
-  
+  const [paymentRows] = await db.query(paymentQuery);
+
+  const [[{ totalFees }]] = await db.query(`
+    SELECT COALESCE(SUM(amount), 0) AS totalFees FROM fees WHERE status = 'active'
+  `);
+
   let paid = 0;
   let pending = 0;
   let cancelled = 0;
 
-  rows.forEach(row => {
+  paymentRows.forEach(row => {
     if (row.status === 'paid') paid = parseFloat(row.total_amount);
     else if (row.status === 'pending') pending = parseFloat(row.total_amount);
     else if (row.status === 'cancelled') cancelled = parseFloat(row.total_amount);
   });
 
-  const total = paid + pending;
-  const collectionRate = total > 0 ? ((paid / total) * 100).toFixed(2) : 0;
+  const unpaid = Math.max(0, parseFloat(totalFees) - paid);
 
   return {
     paid,
     pending,
     cancelled,
-    total,
-    collectionRate: parseFloat(collectionRate)
+    unpaid,
+    collectionRate: totalFees > 0 ? parseFloat(((paid / parseFloat(totalFees)) * 100).toFixed(2)) : 0
   };
 };
 

@@ -145,7 +145,7 @@ export default function ResidentList() {
               <th>Tài khoản</th>
               <th>Căn hộ</th>
               <th>Số điện thoại</th>
-              <th>Ngày tạo</th>
+              <th>Thu phí</th>
               <th>Hành động</th>
             </tr>
           </thead>
@@ -157,7 +157,11 @@ export default function ResidentList() {
                 <td>{resident.linked_username || "—"}</td>
                 <td>{resident.apartment_code || resident.apartment_building || "N/A"}</td>
                 <td>{resident.phone || "N/A"}</td>
-                <td>{resident.created_at ? new Date(resident.created_at).toLocaleDateString('vi-VN') : "N/A"}</td>
+                <td>
+                  <span className={`status-pill ${resident.fee_status === 'paid' ? 'status-paid' : 'status-pending'}`}>
+                    {resident.fee_status === 'paid' ? 'Đã nộp' : 'Chưa nộp'}
+                  </span>
+                </td>
                 <td style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                   <Link to={`/admin/residents/detail/${resident.id}`} className="secondary-btn">
                     Chi tiết

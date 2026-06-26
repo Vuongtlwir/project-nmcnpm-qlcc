@@ -1,4 +1,4 @@
-export function DonutChart({ data, size = 180, thickness = 28 }) {
+export function DonutChart({ data, size = 180, thickness = 28, centerText = "Tổng căn hộ" }) {
   const total = data.reduce((sum, d) => sum + d.value, 0) || 1;
   const cx = size / 2;
   const cy = size / 2;
@@ -36,7 +36,7 @@ export function DonutChart({ data, size = 180, thickness = 28 }) {
         {total}
       </text>
       <text x={cx} y={cy + 14} textAnchor="middle" fontSize="0.7rem" fill="#64748b">
-        Tổng căn hộ
+        {centerText}
       </text>
     </svg>
   );

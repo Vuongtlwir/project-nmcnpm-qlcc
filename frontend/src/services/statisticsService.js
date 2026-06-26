@@ -39,3 +39,13 @@ export async function getRevenueByMonth() {
     return [];
   }
 }
+
+export async function getFeeCollection() {
+  try {
+    const response = await api.get("/statistics/fee-collection");
+    return response.data?.data || { paid: 0, pending: 0, cancelled: 0, unpaid: 0, collectionRate: 0 };
+  } catch (error) {
+    console.error("Lỗi lấy tỷ lệ thu phí:", error);
+    return { paid: 0, pending: 0, cancelled: 0, unpaid: 0, collectionRate: 0 };
+  }
+}

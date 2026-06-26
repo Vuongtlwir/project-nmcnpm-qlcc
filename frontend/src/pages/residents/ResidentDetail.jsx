@@ -66,7 +66,7 @@ export default function ResidentDetail() {
         setLoadingFees(true);
         try {
           const [feeData, paymentData] = await Promise.all([
-            getFees({ apartment_id: resident.apartment_id }),
+            getFees(),
             getPaymentHistory(),
           ]);
           setFees(feeData || []);
@@ -209,6 +209,10 @@ export default function ResidentDetail() {
                 <div className="profile-info-item">
                   <span className="profile-info-label">Số điện thoại</span>
                   <span className="profile-info-value">{displayPhone}</span>
+                </div>
+                <div className="profile-info-item">
+                  <span className="profile-info-label">Ngày tạo</span>
+                  <span className="profile-info-value">{resident?.created_at ? new Date(resident.created_at).toLocaleDateString('vi-VN') : '—'}</span>
                 </div>
                 <div className="profile-info-item">
                   <span className="profile-info-label">Loại tài khoản</span>
