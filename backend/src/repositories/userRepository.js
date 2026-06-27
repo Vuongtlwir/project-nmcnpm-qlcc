@@ -45,6 +45,11 @@ const update = async (id, userData) => {
   return result.affectedRows > 0;
 };
 
+const findByRole = async (role) => {
+  const [rows] = await db.execute('SELECT * FROM users WHERE role = ? AND is_active = 1', [role]);
+  return rows;
+};
+
 const deleteById = async (id) => {
   const [result] = await db.execute('DELETE FROM users WHERE id = ?', [id]);
   return result.affectedRows > 0;
@@ -54,6 +59,7 @@ module.exports = {
   findById,
   findByUsername,
   findByEmail,
+  findByRole,
   create,
   update,
   deleteById

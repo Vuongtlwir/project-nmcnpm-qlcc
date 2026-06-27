@@ -1,7 +1,9 @@
 const feeRepository = require('../repositories/feeRepository');
 const apartmentRepository = require('../repositories/apartmentRepository');
 const residentRepository = require('../repositories/residentRepository');
+const userRepository = require('../repositories/userRepository');
 const paymentService = require('./paymentService');
+const notificationService = require('./notificationService');
 const codeGenerator = require('../utils/generateCode');
 
 const getFees = async ({ search = '', apartmentId = null }) => {
@@ -81,7 +83,7 @@ const payFee = async ({ feeId, userId, method }) => {
     throw { status: 400, message: 'Không tìm thấy thông tin cư dân', code: 'BAD_REQUEST' };
   }
 
-  return paymentService.createPayment({
+  const payment = await paymentService.createPayment({
     fee_id: feeId,
     resident_id: resident.id,
     amount: fee.amount,
@@ -89,6 +91,24 @@ const payFee = async ({ feeId, userId, method }) => {
     method,
     status: 'pending'
   });
+
+  const methodLabels = { card: 'Thẻ', transfer: 'Chuyển khoản', cash: 'Tiền mặt' };
+  const notificationTitle = 'Yêu cầu thanh toán mới';
+  const notificationContent = `Cư dân ${resident.full_name} (${resident.resident_code}) đã yêu cầu thanh toán hóa đơn ${fee.fee_code || feeId} - ${fee.name} với số tiền ${Number(fee.amount).toLocaleString('vi-VN')}đ bằng phương thức ${methodLabels[method] || method}. Vui lòng xác nhận thanh toán.`;
+
+  const admins = await userRepository.findByRole('admin');
+  for (const admin of admins) {
+    await notificationService.createNotification({
+      user_id: admin.id,
+      title: notificationTitle,
+      content: notificationContent,
+      type: 'fee',
+      sort_order: 1,
+      is_read: false
+    });
+  }
+
+  return payment;
 };
 
 module.exports = {

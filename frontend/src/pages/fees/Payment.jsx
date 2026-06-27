@@ -1,15 +1,39 @@
-﻿import { useEffect, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { getFees, getPaymentHistory, payFee } from "../../services/feeService";
 
 const formatCardNumber = (value) =>
   value.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim();
 
+const METHOD_OPTIONS = [
+  { value: "card", label: "Thẻ ngân hàng", icon: "💳" },
+  { value: "transfer", label: "Chuyển khoản", icon: "🏦" },
+  { value: "cash", label: "Tiền mặt", icon: "💵" },
+];
+
+const METHOD_LABELS = { card: "Thẻ", transfer: "Chuyển khoản", cash: "Tiền mặt" };
+
+function generateQRCodeUrl(data) {
+  return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data)}`;
+}
+
+function randomBankInfo() {
+  const banks = [
+    { name: "Vietcombank", number: "0421001234567" },
+    { name: "Techcombank", number: "19035123456789" },
+    { name: "BIDV", number: "22010012345678" },
+    { name: "MB Bank", number: "0987654321" },
+    { name: "ACB", number: "123456789" },
+  ];
+  return banks[Math.floor(Math.random() * banks.length)];
+}
+
 export default function Payment() {
   const location = useLocation();
   const [fees, setFees] = useState([]);
   const [payments, setPayments] = useState([]);
   const [selectedFee, setSelectedFee] = useState(location.state?.fee || null);
+  const [paymentMethod, setPaymentMethod] = useState("card");
   const [cardHolder, setCardHolder] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [expiry, setExpiry] = useState("");
@@ -17,6 +41,8 @@ export default function Payment() {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const bankInfo = useMemo(() => randomBankInfo(), []);
 
   useEffect(() => {
     loadFees();
@@ -36,11 +62,7 @@ export default function Payment() {
     return !payment || payment.status !== "paid";
   });
 
-  const validateForm = () => {
-    if (!selectedFee) {
-      setErrorMessage("Vui lòng chọn một hóa đơn để thanh toán.");
-      return false;
-    }
+  const validateCardForm = () => {
     if (!cardHolder.trim()) {
       setErrorMessage("Tên chủ thẻ không được để trống.");
       return false;
@@ -58,6 +80,17 @@ export default function Payment() {
       setErrorMessage("CVC phải gồm 3 hoặc 4 chữ số.");
       return false;
     }
+    return true;
+  };
+
+  const validateForm = () => {
+    if (!selectedFee) {
+      setErrorMessage("Vui lòng chọn một hóa đơn để thanh toán.");
+      return false;
+    }
+    if (paymentMethod === "card" && !validateCardForm()) {
+      return false;
+    }
     setErrorMessage("");
     return true;
   };
@@ -68,16 +101,18 @@ export default function Payment() {
 
     setIsSubmitting(true);
     try {
-      await payFee(selectedFee.id, { method: "card" });
+      await payFee(selectedFee.id, { method: paymentMethod });
 
+      const methodLabel = METHOD_LABELS[paymentMethod] || paymentMethod;
       setSuccessMessage(
-        `Yêu cầu thanh toán ${selectedFee.fee_code || selectedFee.id} đã được gửi. Vui lòng chờ quản trị viên xác nhận.`
+        `Yêu cầu thanh toán ${selectedFee.fee_code || selectedFee.id} bằng phương thức ${methodLabel} đã được gửi. Vui lòng chờ quản trị viên xác nhận.`
       );
       setSelectedFee(null);
       setCardHolder("");
       setCardNumber("");
       setExpiry("");
       setCvc("");
+      setPaymentMethod("card");
       loadFees();
     } catch (error) {
       setErrorMessage(
@@ -88,6 +123,11 @@ export default function Payment() {
       setIsSubmitting(false);
     }
   };
+
+  const qrData = useMemo(() => selectedFee
+    ? `Ngân hàng: ${bankInfo.name}\nSTK: ${bankInfo.number}\nNội dung: Thanh toan ${selectedFee.fee_code || selectedFee.id} - ${selectedFee.name}\nSo tien: ${Number(selectedFee.amount || 0).toLocaleString("vi-VN")} VND`
+    : "", [selectedFee, bankInfo]);
+  const qrUrl = useMemo(() => generateQRCodeUrl(qrData), [qrData]);
 
   return (
     <section className="page-card">
@@ -110,62 +150,139 @@ export default function Payment() {
 
       {selectedFee && (
         <form onSubmit={handlePaymentSubmit}>
-          <div className="page-card" style={{ marginBottom: "24px", padding: "26px" }}>
-            <h3>Thông tin thẻ</h3>
-            <div className="search-field">
-              <label htmlFor="cardholder">Tên chủ thẻ</label>
-              <input
-                id="cardholder"
-                type="text"
-                placeholder="Nguyễn Văn A"
-                value={cardHolder}
-                onChange={(event) => setCardHolder(event.target.value)}
-              />
-            </div>
-
-            <div className="search-field">
-              <label htmlFor="card-number">Số thẻ</label>
-              <input
-                id="card-number"
-                type="text"
-                placeholder="1234 5678 9012 3456"
-                value={cardNumber}
-                onChange={(event) => setCardNumber(formatCardNumber(event.target.value))}
-                maxLength={19}
-              />
-            </div>
-
-            <div className="page-actions" style={{ marginTop: "8px" }}>
-              <div className="search-field" style={{ minWidth: "160px" }}>
-                <label htmlFor="expiry">Hạn dùng</label>
-                <input
-                  id="expiry"
-                  type="text"
-                  placeholder="MM/YY"
-                  value={expiry}
-                  onChange={(event) => setExpiry(event.target.value)}
-                  maxLength={5}
-                />
-              </div>
-
-              <div className="search-field" style={{ minWidth: "160px" }}>
-                <label htmlFor="cvc">CVC</label>
-                <input
-                  id="cvc"
-                  type="text"
-                  placeholder="123"
-                  value={cvc}
-                  onChange={(event) => setCvc(event.target.value.replace(/\D/g, ""))}
-                  maxLength={4}
-                />
-              </div>
-            </div>
-
-            <div className="action-group" style={{ justifyContent: "flex-end", marginTop: "22px" }}>
-              <button className="primary-btn" type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Đang xử lý..." : "Xác nhận thanh toán"}
+          <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap" }}>
+            {METHOD_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setPaymentMethod(opt.value)}
+                style={{
+                  flex: 1,
+                  minWidth: "140px",
+                  padding: "14px 18px",
+                  borderRadius: "14px",
+                  border: `2px solid ${paymentMethod === opt.value ? "#2563eb" : "#e2e8f0"}`,
+                  background: paymentMethod === opt.value ? "#eff6ff" : "#fff",
+                  cursor: "pointer",
+                  textAlign: "center",
+                  fontWeight: paymentMethod === opt.value ? 700 : 500,
+                  color: paymentMethod === opt.value ? "#1e40af" : "#64748b",
+                  transition: "all 0.15s",
+                  fontSize: "0.95rem",
+                }}
+              >
+                <div style={{ fontSize: "1.5rem", marginBottom: "4px" }}>{opt.icon}</div>
+                {opt.label}
               </button>
+            ))}
+          </div>
+
+          {paymentMethod === "card" && (
+            <div className="page-card" style={{ marginBottom: "24px", padding: "26px" }}>
+              <h3>Thông tin thẻ</h3>
+              <div className="search-field">
+                <label htmlFor="cardholder">Tên chủ thẻ</label>
+                <input
+                  id="cardholder"
+                  type="text"
+                  placeholder="Nguyễn Văn A"
+                  value={cardHolder}
+                  onChange={(event) => setCardHolder(event.target.value)}
+                />
+              </div>
+              <div className="search-field">
+                <label htmlFor="card-number">Số thẻ</label>
+                <input
+                  id="card-number"
+                  type="text"
+                  placeholder="1234 5678 9012 3456"
+                  value={cardNumber}
+                  onChange={(event) => setCardNumber(formatCardNumber(event.target.value))}
+                  maxLength={19}
+                />
+              </div>
+              <div className="page-actions" style={{ marginTop: "8px" }}>
+                <div className="search-field" style={{ minWidth: "160px" }}>
+                  <label htmlFor="expiry">Hạn dùng</label>
+                  <input
+                    id="expiry"
+                    type="text"
+                    placeholder="MM/YY"
+                    value={expiry}
+                    onChange={(event) => setExpiry(event.target.value)}
+                    maxLength={5}
+                  />
+                </div>
+                <div className="search-field" style={{ minWidth: "160px" }}>
+                  <label htmlFor="cvc">CVC</label>
+                  <input
+                    id="cvc"
+                    type="text"
+                    placeholder="123"
+                    value={cvc}
+                    onChange={(event) => setCvc(event.target.value.replace(/\D/g, ""))}
+                    maxLength={4}
+                  />
+                </div>
+              </div>
             </div>
+          )}
+
+          {paymentMethod === "transfer" && (
+            <div className="page-card" style={{ marginBottom: "24px", padding: "26px", textAlign: "center" }}>
+              <h3>Thông tin chuyển khoản</h3>
+              <p style={{ color: "#64748b", marginBottom: "16px" }}>
+                Vui lòng quét mã QR bên dưới để thực hiện chuyển khoản
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+                <img
+                  src={qrUrl}
+                  alt="Mã QR thanh toán"
+                  style={{ width: "200px", height: "200px", borderRadius: "12px", border: "1px solid #e2e8f0" }}
+                  onError={(e) => { e.target.style.display = "none"; }}
+                />
+                <div style={{ background: "#f8fafc", borderRadius: "12px", padding: "16px", textAlign: "left", width: "100%", maxWidth: "360px" }}>
+                  <div style={{ marginBottom: "8px" }}>
+                    <span style={{ color: "#64748b", fontSize: "0.85rem" }}>Ngân hàng:</span>
+                    <div style={{ fontWeight: 600, color: "#0f172a" }}>{bankInfo.name}</div>
+                  </div>
+                  <div style={{ marginBottom: "8px" }}>
+                    <span style={{ color: "#64748b", fontSize: "0.85rem" }}>Số tài khoản:</span>
+                    <div style={{ fontWeight: 600, color: "#0f172a" }}>{bankInfo.number}</div>
+                  </div>
+                  <div style={{ marginBottom: "8px" }}>
+                    <span style={{ color: "#64748b", fontSize: "0.85rem" }}>Số tiền:</span>
+                    <div style={{ fontWeight: 700, color: "#2563eb", fontSize: "1.1rem" }}>
+                      {selectedFee ? Number(selectedFee.amount || 0).toLocaleString("vi-VN") : 0}đ
+                    </div>
+                  </div>
+                  <div>
+                    <span style={{ color: "#64748b", fontSize: "0.85rem" }}>Nội dung:</span>
+                    <div style={{ fontWeight: 600, color: "#0f172a", wordBreak: "break-all" }}>
+                      Thanh toan {selectedFee.fee_code || selectedFee.id} - {selectedFee?.name}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {paymentMethod === "cash" && (
+            <div className="page-card" style={{ marginBottom: "24px", padding: "26px", textAlign: "center" }}>
+              <div style={{ fontSize: "3rem", marginBottom: "12px" }}>💵</div>
+              <h3>Thanh toán tiền mặt</h3>
+              <p style={{ color: "#64748b", marginTop: "8px", lineHeight: 1.6 }}>
+                Vui lòng đến quầy lễ tân tại sảnh chờ để thanh toán trực tiếp.<br />
+                Mang theo mã hóa đơn{" "}
+                <strong>{selectedFee.fee_code || selectedFee.id}</strong> để nhân viên hỗ trợ nhanh chóng.
+              </p>
+            </div>
+          )}
+
+          <div className="action-group" style={{ justifyContent: "flex-end" }}>
+            <button className="primary-btn" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Đang xử lý..." : "Xác nhận thanh toán"}
+            </button>
           </div>
         </form>
       )}
