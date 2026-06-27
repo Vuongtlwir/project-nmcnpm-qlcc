@@ -1,21 +1,29 @@
-﻿import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getResidents } from "../../services/residentService";
+import api from "../../services/api";
 import { createFee } from "../../services/feeService";
 import Modal from "../../components/Modal";
+import Pagination from "../../components/Pagination";
 
 export default function ResidentList() {
   const [search, setSearch] = useState("");
   const [residents, setResidents] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [showExtraFee, setShowExtraFee] = useState(false);
   const [selectedResident, setSelectedResident] = useState(null);
   const [extraLabel, setExtraLabel] = useState("");
   const [extraAmount, setExtraAmount] = useState("");
 
-  const loadResidents = async () => {
+  const loadResidents = async (page = 1) => {
     try {
-      const data = await getResidents();
-      setResidents(data || []);
+      const res = await api.get("/residents", { params: { page, limit: 10, search } });
+      setResidents(res.data?.data || []);
+      const pagination = res.data?.pagination;
+      if (pagination) {
+        setCurrentPage(pagination.page);
+        setTotalPages(pagination.totalPages);
+      }
     } catch (err) {
       console.error("Lỗi khi tải danh sách cư dân:", err);
       setResidents([]);
@@ -23,8 +31,8 @@ export default function ResidentList() {
   };
 
   useEffect(() => {
-    loadResidents();
-  }, []);
+    loadResidents(1);
+  }, [search]);
 
   const openExtraFee = (resident) => {
     setSelectedResident(resident);
@@ -50,19 +58,6 @@ export default function ResidentList() {
       window.alert("Lỗi: " + (err?.response?.data?.message || err.message));
     }
   };
-
-  const filteredResidents = useMemo(
-    () =>
-      residents.filter((item) => {
-          const keyword = search.toLowerCase();
-          return (
-            (item.full_name || item.username || "").toLowerCase().includes(keyword) ||
-            (item.apartment_code || item.apartment_building || "").toLowerCase().includes(keyword) ||
-            (item.email || "").toLowerCase().includes(keyword)
-          );
-        }),
-    [residents, search]
-  );
 
   return (
     <section className="page-card">
@@ -104,31 +99,45 @@ export default function ResidentList() {
             </tr>
           </thead>
           <tbody>
-            {filteredResidents.map((resident) => (
-              <tr key={resident.id}>
-                <td>{resident.resident_code || resident.id}</td>
-                <td>{resident.full_name || "N/A"}</td>
-                <td>{resident.linked_username || "—"}</td>
-                <td>{resident.apartment_code || resident.apartment_building || "N/A"}</td>
-                <td>{resident.phone || "N/A"}</td>
-                <td>
-                  <span className={`status-pill ${resident.fee_status === 'paid' ? 'status-paid' : 'status-pending'}`}>
-                    {resident.fee_status === 'paid' ? 'Đã nộp' : 'Chưa nộp'}
-                  </span>
-                </td>
-                <td style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <Link to={`/admin/residents/detail/${resident.id}`} className="secondary-btn">
-                    Chi tiết
-                  </Link>
-                  <button type="button" className="primary-btn" style={{ fontSize: '0.8rem', padding: '0.35rem 0.7rem' }} onClick={() => openExtraFee(resident)}>
-                    Phí phát sinh
-                  </button>
+            {residents.length === 0 ? (
+              <tr>
+                <td colSpan="7" style={{ textAlign: "center", padding: "20px" }}>
+                  Không có cư dân nào.
                 </td>
               </tr>
-            ))}
+            ) : (
+              residents.map((resident) => (
+                <tr key={resident.id}>
+                  <td>{resident.resident_code || resident.id}</td>
+                  <td>{resident.full_name || "N/A"}</td>
+                  <td>{resident.linked_username || "—"}</td>
+                  <td>{resident.apartment_code || resident.apartment_building || "N/A"}</td>
+                  <td>{resident.phone || "N/A"}</td>
+                  <td>
+                    <span className={`status-pill ${resident.fee_status === 'paid' ? 'status-paid' : 'status-pending'}`}>
+                      {resident.fee_status === 'paid' ? 'Đã nộp' : 'Chưa nộp'}
+                    </span>
+                  </td>
+                  <td style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <Link to={`/admin/residents/detail/${resident.id}`} className="secondary-btn">
+                      Chi tiết
+                    </Link>
+                    <button type="button" className="primary-btn" style={{ fontSize: '0.8rem', padding: '0.35rem 0.7rem' }} onClick={() => openExtraFee(resident)}>
+                      Phí phát sinh
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={loadResidents}
+      />
 
       <Modal
         isOpen={showExtraFee}

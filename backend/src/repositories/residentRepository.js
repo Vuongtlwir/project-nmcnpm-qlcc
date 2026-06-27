@@ -27,7 +27,7 @@ const findAll = async ({ limit = 10, offset = 0, search = '' }) => {
     params.push(searchParam, searchParam, searchParam, searchParam, searchParam, searchParam, searchParam);
   }
 
-  query += ` ORDER BY r.created_at DESC LIMIT ? OFFSET ?`;
+  query += ` ORDER BY r.id ASC LIMIT ? OFFSET ?`;
   params.push(limit, offset);
 
   const [rows] = await db.query(query, params);
