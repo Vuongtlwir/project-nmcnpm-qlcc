@@ -27,6 +27,7 @@ import NotificationList from "./pages/notifications/NotificationList";
 import UserChat from "./pages/user/UserChat";
 import UserServices from "./pages/user/UserServices";
 import AdminServiceManagement from "./pages/admin/AdminServiceManagement";
+import BulkExtraFee from "./pages/fees/BulkExtraFee";
 import Login from "./pages/auth/Login";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 
@@ -66,6 +67,7 @@ function App() {
         <Route path="bills" element={<AdminFeeManagement />} />
         <Route path="bills/create" element={<CreateFee />} />
         <Route path="bills/import" element={<BulkCreateFee />} />
+        <Route path="bills/extra-fee" element={<BulkExtraFee />} />
         <Route path="residents" element={<ResidentList />} />
         <Route path="residents/add" element={<AddResident />} />
         <Route path="residents/edit/:id" element={<EditResident />} />

@@ -28,6 +28,9 @@ export default function ApartmentsList() {
   const [apartments, setApartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [transportDetails, setTransportDetails] = useState(null);
+  const [editingPlates, setEditingPlates] = useState(null);
+  const [editCounts, setEditCounts] = useState(null);
+  const [savingPlates, setSavingPlates] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editingStatus, setEditingStatus] = useState("");
   const [savingId, setSavingId] = useState(null);
@@ -43,14 +46,89 @@ export default function ApartmentsList() {
   };
 
   const showTransportDetails = (item) => {
+    const plates = parsePlates(item.vehicle_plates) || { motorbikes: [], cars: [] };
     setTransportDetails({
+      id: item.id,
       code: item.code,
       ...getTransportCounts(item),
-      plates: parsePlates(item.vehicle_plates),
+      plates: {
+        motorbikes: [...(plates.motorbikes || [])],
+        cars: [...(plates.cars || [])],
+      },
+    });
+    setEditingPlates(null);
+    setEditCounts(null);
+  };
+
+  const closeTransportDetails = () => {
+    setTransportDetails(null);
+    setEditingPlates(null);
+    setEditCounts(null);
+  };
+
+  const startEditPlates = () => {
+    setEditingPlates({
+      motorbikes: [...(transportDetails.plates?.motorbikes || [])],
+      cars: [...(transportDetails.plates?.cars || [])],
+    });
+    setEditCounts({ bicycles: transportDetails.bicycles });
+  };
+
+  const cancelEditPlates = () => {
+    setEditingPlates(null);
+    setEditCounts(null);
+  };
+
+  const adjustCount = (type, delta) => {
+    setEditCounts(prev => ({ ...prev, [type]: Math.max(0, (prev[type] || 0) + delta) }));
+  };
+
+  const addPlate = (type) => {
+    setEditingPlates(prev => ({ ...prev, [type]: [...prev[type], ""] }));
+  };
+
+  const removePlate = (type, index) => {
+    setEditingPlates(prev => ({
+      ...prev,
+      [type]: prev[type].filter((_, i) => i !== index)
+    }));
+  };
+
+  const updatePlate = (type, index, value) => {
+    setEditingPlates(prev => {
+      const updated = [...prev[type]];
+      updated[index] = value;
+      return { ...prev, [type]: updated };
     });
   };
 
-  const closeTransportDetails = () => setTransportDetails(null);
+  const savePlates = async () => {
+    if (!transportDetails) return;
+    setSavingPlates(true);
+    try {
+      const counts = {
+        motorbikes: editingPlates.motorbikes.length,
+        cars: editingPlates.cars.length,
+        bicycles: editCounts.bicycles,
+      };
+      const payload = {
+        vehicle_plates: JSON.stringify(editingPlates),
+        ...counts,
+      };
+      await updateApartment(transportDetails.id, payload);
+      setTransportDetails(prev => ({
+        ...prev,
+        ...counts,
+        plates: { motorbikes: [...editingPlates.motorbikes], cars: [...editingPlates.cars] },
+      }));
+      setEditingPlates(null);
+      setEditCounts(null);
+    } catch (err) {
+      console.error("Lỗi cập nhật phương tiện:", err);
+    } finally {
+      setSavingPlates(false);
+    }
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -271,42 +349,102 @@ export default function ApartmentsList() {
                 <h3 style={{ margin: 0 }}>Phương tiện căn hộ {transportDetails.code}</h3>
                 <p style={{ margin: "6px 0 0", color: "#6b7280" }}>Số lượng xe theo loại</p>
               </div>
-              <button type="button" className="secondary-btn" onClick={closeTransportDetails}>
-                Đóng
-              </button>
+              <div style={{ display: "flex", gap: "8px" }}>
+                {!editingPlates ? (
+                  <button type="button" className="secondary-btn" onClick={startEditPlates}>
+                    {transportDetails.plates?.motorbikes?.length || transportDetails.plates?.cars?.length ? "Chỉnh sửa" : "Thêm biển số"}
+                  </button>
+                ) : (
+                  <>
+                    <button type="button" className="primary-btn" onClick={savePlates} disabled={savingPlates}>
+                      {savingPlates ? "..." : "Lưu"}
+                    </button>
+                    <button type="button" className="secondary-btn" onClick={cancelEditPlates}>Hủy</button>
+                  </>
+                )}
+                <button type="button" className="secondary-btn" onClick={closeTransportDetails}>
+                  Đóng
+                </button>
+              </div>
             </div>
             <div style={{ display: "grid", gap: "12px" }}>
               <div style={{ padding: "12px", background: "#f8fafc", borderRadius: "12px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: transportDetails.plates?.motorbikes?.length ? 8 : 0 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: (!editingPlates && transportDetails.plates?.motorbikes?.length) ? 8 : 0 }}>
                   <span>Xe máy</span>
-                  <strong>{transportDetails.motorbikes}</strong>
+                  <strong>{editingPlates ? editingPlates.motorbikes.length : transportDetails.motorbikes}</strong>
                 </div>
-                {transportDetails.plates?.motorbikes?.length > 0 && (
+                {editingPlates ? (
+                  <div>
+                    <div style={{ display: "flex", gap: "8px", marginBottom: "8px", flexWrap: "wrap" }}>
+                      {editingPlates.motorbikes.length === 0 && <span style={{ fontSize: "0.8rem", color: "#94a3b8" }}>Chưa có biển số</span>}
+                      {editingPlates.motorbikes.map((p, i) => (
+                        <div key={i} style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+                          <input
+                            type="text"
+                            value={p}
+                            onChange={(e) => updatePlate("motorbikes", i, e.target.value)}
+                            placeholder="VD: 51F1-12345"
+                            style={{ width: "130px", padding: "4px 8px", border: "1px solid #d1d5db", borderRadius: "4px", fontSize: "0.8rem" }}
+                          />
+                          <button type="button" className="secondary-btn" style={{ padding: "2px 8px", fontSize: "0.75rem" }} onClick={() => removePlate("motorbikes", i)}>Xóa</button>
+                        </div>
+                      ))}
+                    </div>
+                    <button type="button" className="secondary-btn" style={{ padding: "2px 10px", fontSize: "0.78rem" }} onClick={() => addPlate("motorbikes")}>+ Thêm xe máy</button>
+                  </div>
+                ) : transportDetails.plates?.motorbikes?.length > 0 ? (
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
                     {transportDetails.plates.motorbikes.map((p, i) => (
                       <span key={i} style={{ fontSize: "0.78rem", background: "#e0e7ff", color: "#4338ca", padding: "2px 8px", borderRadius: "4px" }}>{p}</span>
                     ))}
                   </div>
-                )}
+                ) : null}
               </div>
               <div style={{ padding: "12px", background: "#f8fafc", borderRadius: "12px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span>Xe đạp</span>
-                  <strong>{transportDetails.bicycles}</strong>
+                  {editCounts ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <button type="button" className="secondary-btn" style={{ padding: "2px 10px", fontSize: "1rem", lineHeight: 1 }} onClick={() => adjustCount("bicycles", -1)}>−</button>
+                      <strong>{editCounts.bicycles}</strong>
+                      <button type="button" className="secondary-btn" style={{ padding: "2px 10px", fontSize: "1rem", lineHeight: 1 }} onClick={() => adjustCount("bicycles", 1)}>+</button>
+                    </div>
+                  ) : (
+                    <strong>{transportDetails.bicycles}</strong>
+                  )}
                 </div>
               </div>
               <div style={{ padding: "12px", background: "#f8fafc", borderRadius: "12px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: transportDetails.plates?.cars?.length ? 8 : 0 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: (!editingPlates && transportDetails.plates?.cars?.length) ? 8 : 0 }}>
                   <span>Ô tô</span>
-                  <strong>{transportDetails.cars}</strong>
+                  <strong>{editingPlates ? editingPlates.cars.length : transportDetails.cars}</strong>
                 </div>
-                {transportDetails.plates?.cars?.length > 0 && (
+                {editingPlates ? (
+                  <div>
+                    <div style={{ display: "flex", gap: "8px", marginBottom: "8px", flexWrap: "wrap" }}>
+                      {editingPlates.cars.length === 0 && <span style={{ fontSize: "0.8rem", color: "#94a3b8" }}>Chưa có biển số</span>}
+                      {editingPlates.cars.map((p, i) => (
+                        <div key={i} style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+                          <input
+                            type="text"
+                            value={p}
+                            onChange={(e) => updatePlate("cars", i, e.target.value)}
+                            placeholder="VD: 51A-12345"
+                            style={{ width: "130px", padding: "4px 8px", border: "1px solid #d1d5db", borderRadius: "4px", fontSize: "0.8rem" }}
+                          />
+                          <button type="button" className="secondary-btn" style={{ padding: "2px 8px", fontSize: "0.75rem" }} onClick={() => removePlate("cars", i)}>Xóa</button>
+                        </div>
+                      ))}
+                    </div>
+                    <button type="button" className="secondary-btn" style={{ padding: "2px 10px", fontSize: "0.78rem" }} onClick={() => addPlate("cars")}>+ Thêm ô tô</button>
+                  </div>
+                ) : transportDetails.plates?.cars?.length > 0 ? (
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
                     {transportDetails.plates.cars.map((p, i) => (
                       <span key={i} style={{ fontSize: "0.78rem", background: "#dbeafe", color: "#1d4ed8", padding: "2px 8px", borderRadius: "4px" }}>{p}</span>
                     ))}
                   </div>
-                )}
+                ) : null}
               </div>
             </div>
           </div>

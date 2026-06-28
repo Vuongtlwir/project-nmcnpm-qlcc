@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { getApartmentById } from "../../services/apartmentService";
+import { getApartmentById, updateApartment } from "../../services/apartmentService";
+import Modal from "../../components/Modal";
 
 const getStatusText = (status) => {
   if (status === "empty") return "Trống";
@@ -9,12 +10,20 @@ const getStatusText = (status) => {
   return status || "N/A";
 };
 
+function parsePlates(apartment) {
+  if (!apartment?.vehicle_plates) return null;
+  try { return JSON.parse(apartment.vehicle_plates); } catch { return null; }
+}
+
 export default function ApartmentDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [apartment, setApartment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showPlatesModal, setShowPlatesModal] = useState(false);
+  const [editPlates, setEditPlates] = useState({ motorbikes: [], cars: [] });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const loadApartment = async () => {
@@ -39,6 +48,45 @@ export default function ApartmentDetail() {
 
     loadApartment();
   }, [id]);
+
+  const openPlatesModal = () => {
+    const plates = parsePlates(apartment) || { motorbikes: [], cars: [] };
+    setEditPlates({ motorbikes: [...(plates.motorbikes || [])], cars: [...(plates.cars || [])] });
+    setShowPlatesModal(true);
+  };
+
+  const handleSavePlates = async () => {
+    setSaving(true);
+    try {
+      const payload = { vehicle_plates: JSON.stringify(editPlates) };
+      await updateApartment(id, payload);
+      setApartment(prev => ({ ...prev, ...payload }));
+      setShowPlatesModal(false);
+    } catch (err) {
+      console.error("Lỗi cập nhật biển số xe:", err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const addPlate = (type) => {
+    setEditPlates(prev => ({ ...prev, [type]: [...prev[type], ""] }));
+  };
+
+  const removePlate = (type, index) => {
+    setEditPlates(prev => ({
+      ...prev,
+      [type]: prev[type].filter((_, i) => i !== index)
+    }));
+  };
+
+  const updatePlate = (type, index, value) => {
+    setEditPlates(prev => {
+      const updated = [...prev[type]];
+      updated[index] = value;
+      return { ...prev, [type]: updated };
+    });
+  };
 
   if (loading) {
     return (
@@ -126,13 +174,17 @@ export default function ApartmentDetail() {
           </div>
         </div>
 
-        {apartment.vehicle_plates && (() => {
-          let plates;
-          try { plates = JSON.parse(apartment.vehicle_plates); } catch { plates = null; }
-          if (!plates) return null;
-          return (
-            <div style={{ marginTop: "16px" }}>
-              <h4 style={{ margin: "0 0 10px", fontSize: "0.95rem" }}>Biển số xe</h4>
+        <div style={{ marginTop: "16px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+            <h4 style={{ margin: 0, fontSize: "0.95rem" }}>Biển số xe</h4>
+            <button onClick={openPlatesModal} className="secondary-btn" style={{ padding: "4px 12px", fontSize: "0.8rem" }}>
+              {parsePlates(apartment) ? "Chỉnh sửa" : "Thêm biển số"}
+            </button>
+          </div>
+          {(() => {
+            const plates = parsePlates(apartment);
+            if (!plates) return <p style={{ fontSize: "0.85rem", color: "#94a3b8", fontStyle: "italic" }}>Chưa có biển số xe</p>;
+            return (
               <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
                 {plates.motorbikes?.length > 0 && (
                   <div>
@@ -155,14 +207,65 @@ export default function ApartmentDetail() {
                   </div>
                 )}
               </div>
-            </div>
-          );
-        })()}
+            );
+          })()}
+        </div>
 
         <div className="page-actions" style={{ justifyContent: "flex-end", marginTop: "18px" }}>
           <Link to="/admin/apartments" className="secondary-btn">Quay lại</Link>
         </div>
       </div>
+
+      <Modal
+        isOpen={showPlatesModal}
+        title="Quản lý biển số xe"
+        onClose={() => setShowPlatesModal(false)}
+        onConfirm={handleSavePlates}
+        confirmText="Lưu"
+        loading={saving}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+              <strong style={{ fontSize: "0.9rem" }}>Xe máy</strong>
+              <button className="secondary-btn" style={{ padding: "2px 10px", fontSize: "0.8rem" }} onClick={() => addPlate("motorbikes")}>+ Thêm</button>
+            </div>
+            {editPlates.motorbikes.length === 0 && <p style={{ fontSize: "0.8rem", color: "#94a3b8" }}>Chưa có biển số</p>}
+            {editPlates.motorbikes.map((plate, i) => (
+              <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "6px" }}>
+                <input
+                  type="text"
+                  value={plate}
+                  onChange={(e) => updatePlate("motorbikes", i, e.target.value)}
+                  placeholder="VD: 51F1-12345"
+                  style={{ flex: 1, padding: "6px 10px", border: "1px solid #d1d5db", borderRadius: "4px", fontSize: "0.85rem" }}
+                />
+                <button className="modal-cancel-btn" style={{ padding: "4px 10px" }} onClick={() => removePlate("motorbikes", i)}>Xóa</button>
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+              <strong style={{ fontSize: "0.9rem" }}>Ô tô</strong>
+              <button className="secondary-btn" style={{ padding: "2px 10px", fontSize: "0.8rem" }} onClick={() => addPlate("cars")}>+ Thêm</button>
+            </div>
+            {editPlates.cars.length === 0 && <p style={{ fontSize: "0.8rem", color: "#94a3b8" }}>Chưa có biển số</p>}
+            {editPlates.cars.map((plate, i) => (
+              <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "6px" }}>
+                <input
+                  type="text"
+                  value={plate}
+                  onChange={(e) => updatePlate("cars", i, e.target.value)}
+                  placeholder="VD: 51A-12345"
+                  style={{ flex: 1, padding: "6px 10px", border: "1px solid #d1d5db", borderRadius: "4px", fontSize: "0.85rem" }}
+                />
+                <button className="modal-cancel-btn" style={{ padding: "4px 10px" }} onClick={() => removePlate("cars", i)}>Xóa</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Modal>
     </section>
   );
 }

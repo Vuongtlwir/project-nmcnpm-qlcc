@@ -67,8 +67,8 @@ export default function AdminFeeManagement() {
           <Link to="/admin/bills/import" className="secondary-btn">
             Nhập Excel
           </Link>
-          <Link to="/admin/bills/create" className="primary-btn">
-            Tạo hóa đơn
+          <Link to="/admin/bills/extra-fee" className="secondary-btn">
+            Phí phát sinh
           </Link>
         </div>
       </div>
